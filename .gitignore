@@ -41,3 +41,5 @@ backend/data/raw/*.geojson
 
 # Build
 *.log
+backend/.venv/
+nohup.out
