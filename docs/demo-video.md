@@ -85,7 +85,13 @@
 
 ### 2:50–3:00 — Impact & Commercial Story
 
-**Say**: "UrbanPulse addresses three challenge problems in one platform. Equity-weighted scoring surfaces underserved areas first — directly addressing Montgomery's 19.7% poverty rate. The city-agnostic architecture supports any municipality with an open data portal. SaaS pricing from $2K to $15K per month — undercutting Esri Hub while adding AI and web intelligence. Projected $4.3M ARR by Year 3."
+**Action**: Navigate to `/business` (click "Business Model" in navigation).
+
+**Say**: "The commercial pitch is built right into the app. UrbanPulse shows market sizing, pricing tiers, competitive landscape, unit economics, and 3-year revenue projections — all in a polished in-app page."
+
+**Action**: Scroll through the pricing tiers and revenue projections.
+
+**Say**: "SaaS pricing from $2K to $15K per month — undercutting Esri Hub while adding AI and web intelligence. 85% gross margins because most data sources are free. Projected $4.3M ARR by Year 3 with 80 city deployments. The architecture is city-agnostic — adding a new city is one config file, zero code changes, less than one week to onboard."
 
 **Say**: "Thank you."
 

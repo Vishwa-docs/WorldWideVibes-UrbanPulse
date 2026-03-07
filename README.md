@@ -4,7 +4,7 @@
 
 > Built for the World Wide Vibes GenAI.Works Hackathon — March 2026
 
-**Live Demo**: [urbanpulse-chi.vercel.app](https://urbanpulse-chi.vercel.app) | **API**: [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app/api/health) | **Repo**: [github.com/Vishwa-docs/World-Wide-Vibes](https://github.com/Vishwa-docs/World-Wide-Vibes)
+**Live Demo**: [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) | **Repo**: [github.com/Vishwa-docs/World-Wide-Vibes](https://github.com/Vishwa-docs/World-Wide-Vibes)
 
 ---
 
@@ -51,7 +51,7 @@ Every data source is **live and real** — all 8 ArcGIS endpoints return actual 
 | Bright Data Integration | **4 products**: Web Scraper, SERP API, Web Unlocker, MCP Server |
 | AI / GenAI | Azure OpenAI (GPT-4o-2) multi-role recommendation engine with evidence contracts |
 | Social Impact | Equity-weighted scoring, service-gap analysis, underserved-area prioritization |
-| Commercial Potential | City-agnostic architecture, SaaS $2K–15K/mo per city ([business model](docs/business-model.md)) |
+| Commercial Potential | City-agnostic architecture, SaaS $2K–15K/mo per city ([business model](docs/business-model.md)), **in-app Business Model page** at `/business` |
 
 ### Challenge Problems Addressed
 
@@ -88,6 +88,10 @@ Every data source is **live and real** — all 8 ArcGIS endpoints return actual 
 - **Web Intelligence panel** — SERP search for Montgomery business landscape, URL scraper, Bright Data capabilities view
 - **Weather widget** — real-time current conditions + 7-day forecast via Open-Meteo
 - **Enhanced demographics** from Census ACS (31 variables: education, commuting, transportation), workforce data, market gap analysis
+
+### Business Model & Commercial Pitch
+- **In-app `/business` page** — pricing tiers, market sizing, competitive landscape, 3-year revenue projections, unit economics, go-to-market strategy rendered as a polished UI page
+- Detailed [docs/business-model.md](docs/business-model.md) with full numbers
 
 ### Data Integrity
 - **100% live data** — all 8 ArcGIS endpoints return real Montgomery data; no mock or simulated fallbacks
@@ -149,6 +153,7 @@ Open http://localhost:5173 (or the port Vite assigns).
 | `/compare` | Property Comparison |
 | `/story` | Story Mode |
 | `/insights` | City Insights & Analytics |
+| `/business` | Business Model & Commercial Pitch |
 
 ### Environment Variables (Backend `.env`)
 
@@ -224,7 +229,7 @@ Open http://localhost:5173 (or the port Vite assigns).
 │       │   ├── Insights/        # AnalyticsCharts, WebIntelligence, Weather, Demographics
 │       │   ├── Agent/           # AI copilot chat (Site Workspace)
 │       │   └── Map/             # LayerControls (14-layer toggle)
-│       ├── pages/               # Copilot, Dashboard, Compare, Story, Insights
+│       ├── pages/               # Copilot, Dashboard, Compare, Story, Insights, BusinessModel
 │       ├── services/api.ts      # Typed API client
 │       └── types/index.ts       # TypeScript interfaces
 ├── docs/                        # Documentation & demo scripts
@@ -251,8 +256,9 @@ npm run build                # TypeScript + production build check
 
 | Service | Platform | URL |
 |---------|----------|-----|
-| Frontend | Vercel | [urbanpulse-chi.vercel.app](https://urbanpulse-chi.vercel.app) |
-| Backend | Railway | [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) |
+| Full App | Railway | [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) |
+
+The app is deployed as a **single unified service** — the Dockerfile builds the React frontend and serves it from FastAPI alongside the API. No separate frontend hosting required.
 
 See [docs/deploy-free.md](docs/deploy-free.md) for full deployment instructions.
 

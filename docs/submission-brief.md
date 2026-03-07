@@ -63,7 +63,7 @@ All 8 endpoints return **100% live data** — zero mock or simulated fallbacks.
 | **Quality & Design** | 10 | Professional dark-gradient UI, 4-role architecture, 7 recharts visualizations, **14-layer interactive map**, AI Agent Chat, 137 tests passing, 0 TS errors, clean build. |
 | **Originality** | 5 | No existing civic AI copilot for site selection. Equity-weighted scoring. Radar chart comparing licenses vs foot traffic. Multi-role persona with scenario weights. |
 | **Social Impact** | 5 | Equity-first scoring surfaces food deserts, vacant parcels, underserved neighborhoods. Directly addresses Montgomery's 19.7% poverty rate. |
-| **Commercial Potential** | 5 | SaaS tiers: Starter $2K/mo, Pro $5K/mo, Enterprise $10K–15K/mo. Undercuts Esri Hub ($25K+/yr). 85% gross margins. TAM: 19,500+ municipalities. [Full business model](business-model.md). |
+| **Commercial Potential** | 5 | SaaS tiers: Starter $2K/mo, Pro $5K/mo, Enterprise $10K–15K/mo. Undercuts Esri Hub ($25K+/yr). 85% gross margins. TAM: 19,500+ municipalities. **In-app Business Model page** at `/business`. [Full business model](business-model.md). |
 
 ## Commercialization Path
 
@@ -78,6 +78,7 @@ See [business-model.md](business-model.md) for detailed pricing, unit economics,
 - **Data**: 8 Montgomery ArcGIS REST APIs + Census ACS (31 vars) + Google Places + Open-Meteo + Bright Data (4 products)
 
 ## Live Deployment
-- **Frontend**: https://urbanpulse-chi.vercel.app
-- **Backend**: https://urbanpulse-api-production.up.railway.app
+- **Live App**: https://urbanpulse-api-production.up.railway.app
 - **Repository**: https://github.com/Vishwa-docs/World-Wide-Vibes
+
+The app is deployed as a single unified service on Railway — the Dockerfile builds the React frontend and serves it from FastAPI alongside the API.

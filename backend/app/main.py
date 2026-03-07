@@ -4,11 +4,15 @@ UrbanPulse API – main application entry-point.
 Configures middleware, lifespan events, and route inclusion.
 """
 
+import os
+from pathlib import Path
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.database import create_db_and_tables
@@ -82,3 +86,22 @@ app.include_router(recommendations_router)
 app.include_router(evidence_router)
 app.include_router(signals_router)
 app.include_router(weather_router)
+
+# ── Static Frontend (production) ──────────────────────────────────────────────
+# In production the Dockerfile builds the React app and copies the output to
+# /app/static.  We mount that directory and add a catch-all so that every
+# non-API path serves index.html (SPA client-side routing).
+
+_static_dir = Path(__file__).resolve().parent.parent / "static"
+
+if _static_dir.is_dir():
+    # Serve assets (JS, CSS, images, etc.)
+    app.mount("/assets", StaticFiles(directory=_static_dir / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def _spa_fallback(full_path: str):
+        """Return the requested file if it exists, otherwise index.html."""
+        file = _static_dir / full_path
+        if file.is_file():
+            return FileResponse(file)
+        return FileResponse(_static_dir / "index.html")

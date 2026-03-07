@@ -65,6 +65,8 @@ Social impact:
 
 ## 3:30–4:20 | Commercial Potential
 
+I navigate to the **Business Model** page — `/business` — this is built right into the app.
+
 Montgomery is our launch customer model. The architecture is **city-agnostic by design**:
 - `config/cities/montgomery.json` holds all endpoint URLs, Census FIPS codes, and map bounds.
 - Adding a new city = one config file, zero code changes. Onboarding time: < 1 week.

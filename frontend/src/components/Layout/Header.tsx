@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Activity, Home, Map, GitCompareArrows, BookOpen, Sparkles } from 'lucide-react';
+import { Activity, Home, Map, GitCompareArrows, BookOpen, Sparkles, DollarSign } from 'lucide-react';
 import BrightDataBadge from './BrightDataBadge';
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/compare', label: 'Compare', icon: GitCompareArrows },
   { to: '/story', label: 'Story Mode', icon: BookOpen },
   { to: '/insights', label: 'Insights', icon: Sparkles },
+  { to: '/business', label: 'Business Model', icon: DollarSign },
 ];
 
 export default function Header() {

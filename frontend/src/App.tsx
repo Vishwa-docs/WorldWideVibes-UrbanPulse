@@ -5,6 +5,7 @@ import Compare from './pages/Compare';
 import StoryMode from './pages/StoryMode';
 import Insights from './pages/Insights';
 import Copilot from './pages/Copilot';
+import BusinessModel from './pages/BusinessModel';
 import { AppStateProvider, useAppState } from './context/AppStateContext';
 
 function AppContent() {
@@ -19,6 +20,7 @@ function AppContent() {
         <Route path="/compare" element={<Compare />} />
         <Route path="/story" element={<StoryMode />} />
         <Route path="/insights" element={<Insights />} />
+        <Route path="/business" element={<BusinessModel />} />
       </Routes>
     </div>
   );
