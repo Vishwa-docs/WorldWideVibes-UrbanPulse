@@ -328,3 +328,286 @@ class TestBrightDataStatusMocked:
         assert "base_url" in data
         assert data["configured"] is True
         assert data["mode"] == "live"
+
+
+# ── SERP API endpoint tests ──────────────────────────────────────────────
+
+
+class TestSerpEndpoint:
+    """Test /api/brightdata/serp and /api/brightdata/serp/local."""
+
+    def setup_method(self):
+        _reset_client()
+        self._mock_client = _make_mock_client()
+        self._mock_client.search_serp = AsyncMock(
+            return_value={
+                "query": "grocery stores",
+                "engine": "google",
+                "location": "Montgomery,Alabama,United States",
+                "result_count": 3,
+                "results": [
+                    {"title": "Piggly Wiggly", "url": "https://pigglywiggly.com", "description": "Grocery chain", "position": 1},
+                    {"title": "Publix", "url": "https://publix.com", "description": "Supermarket", "position": 2},
+                    {"title": "Winn-Dixie", "url": "https://winndixie.com", "description": "Grocery store", "position": 3},
+                ],
+                "source": "brightdata_serp",
+                "is_live": True,
+            }
+        )
+        self._patcher = patch(
+            "app.routes.brightdata.get_brightdata_client",
+            return_value=self._mock_client,
+        )
+        self._patcher.start()
+
+    def teardown_method(self):
+        self._patcher.stop()
+        _reset_client()
+
+    def test_serp_search(self):
+        resp = client.post(
+            "/api/brightdata/serp",
+            json={"query": "grocery stores", "engine": "google", "num_results": 5},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["query"] == "grocery stores"
+        assert data["result_count"] == 3
+        assert len(data["results"]) == 3
+        assert data["results"][0]["title"] == "Piggly Wiggly"
+        assert data["source"] == "brightdata_serp"
+
+    def test_serp_search_default_params(self):
+        resp = client.post(
+            "/api/brightdata/serp",
+            json={"query": "restaurants"},
+        )
+        assert resp.status_code == 200
+        # Verify the mock was called
+        self._mock_client.search_serp.assert_called()
+
+    def test_serp_local(self):
+        resp = client.get("/api/brightdata/serp/local?q=coffee+shops&category=cafe")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "results" in data
+
+    def test_serp_local_requires_query(self):
+        resp = client.get("/api/brightdata/serp/local")
+        assert resp.status_code == 422  # Missing required query param
+
+
+class TestSerpSimulated:
+    """Test SERP in simulated mode (no API key)."""
+
+    def setup_method(self):
+        _reset_client()
+        # Create a client that is NOT configured (simulated mode)
+        self._mock_client = MagicMock(spec=BrightDataClient)
+        self._mock_client.is_configured = False
+        # Use the real simulated response logic
+        real_client = BrightDataClient(strict=False)
+        self._mock_client.search_serp = AsyncMock(
+            side_effect=lambda **kwargs: asyncio.get_event_loop().run_until_complete(
+                real_client.search_serp(**kwargs)
+            ) if False else real_client._simulate_serp_response(
+                kwargs.get("query", "test"),
+                kwargs.get("engine", "google"),
+                kwargs.get("location", "Montgomery,Alabama,United States"),
+                kwargs.get("num_results", 10),
+            )
+        )
+        self._patcher = patch(
+            "app.routes.brightdata.get_brightdata_client",
+            return_value=self._mock_client,
+        )
+        self._patcher.start()
+
+    def teardown_method(self):
+        self._patcher.stop()
+        _reset_client()
+
+    def test_serp_simulated_returns_results(self):
+        resp = client.post(
+            "/api/brightdata/serp",
+            json={"query": "grocery stores"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["source"] == "brightdata_serp_simulated"
+        assert data["is_live"] is False
+        assert len(data["results"]) > 0
+
+    def test_serp_simulated_deterministic(self):
+        """Same query should produce the same simulated results."""
+        resp1 = client.post("/api/brightdata/serp", json={"query": "grocery stores"})
+        resp2 = client.post("/api/brightdata/serp", json={"query": "grocery stores"})
+        assert resp1.json()["results"] == resp2.json()["results"]
+
+
+# ── Web Unlocker (scrape) endpoint tests ─────────────────────────────────
+
+
+class TestScrapeEndpoint:
+    """Test /api/brightdata/scrape."""
+
+    def setup_method(self):
+        _reset_client()
+        self._mock_client = _make_mock_client()
+        self._mock_client.scrape_url = AsyncMock(
+            return_value={
+                "url": "https://montgomeryal.gov",
+                "content": "# Montgomery, AL\n\nCity government website content here.",
+                "content_length": 52,
+                "source": "brightdata_unlocker",
+                "is_live": True,
+            }
+        )
+        self._patcher = patch(
+            "app.routes.brightdata.get_brightdata_client",
+            return_value=self._mock_client,
+        )
+        self._patcher.start()
+
+    def teardown_method(self):
+        self._patcher.stop()
+        _reset_client()
+
+    def test_scrape_url(self):
+        resp = client.post(
+            "/api/brightdata/scrape",
+            json={"url": "https://montgomeryal.gov"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["url"] == "https://montgomeryal.gov"
+        assert "content" in data
+        assert data["source"] == "brightdata_unlocker"
+        assert data["is_live"] is True
+
+    def test_scrape_url_with_max_length(self):
+        long_content = "a" * 10000
+        self._mock_client.scrape_url = AsyncMock(
+            return_value={
+                "url": "https://example.com",
+                "content": long_content,
+                "content_length": 10000,
+                "source": "brightdata_unlocker",
+                "is_live": True,
+            }
+        )
+        resp = client.post(
+            "/api/brightdata/scrape",
+            json={"url": "https://example.com", "max_length": 500},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        # Content should be truncated + "... (truncated)"
+        assert len(data["content"]) < 600
+        assert "(truncated)" in data["content"]
+
+    def test_scrape_requires_url(self):
+        resp = client.post("/api/brightdata/scrape", json={})
+        assert resp.status_code == 422
+
+
+class TestScrapeSimulated:
+    """Test scrape in simulated mode."""
+
+    def setup_method(self):
+        _reset_client()
+        self._mock_client = MagicMock(spec=BrightDataClient)
+        self._mock_client.is_configured = False
+        real_client = BrightDataClient(strict=False)
+        self._mock_client.scrape_url = AsyncMock(
+            side_effect=lambda url: real_client._simulate_scrape_response(url)
+        )
+        self._patcher = patch(
+            "app.routes.brightdata.get_brightdata_client",
+            return_value=self._mock_client,
+        )
+        self._patcher.start()
+
+    def teardown_method(self):
+        self._patcher.stop()
+        _reset_client()
+
+    def test_scrape_simulated(self):
+        resp = client.post(
+            "/api/brightdata/scrape",
+            json={"url": "https://montgomeryal.gov/about"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["source"] == "brightdata_unlocker_simulated"
+        assert data["is_live"] is False
+        assert "montgomeryal.gov" in data["content"]
+
+
+# ── Capabilities endpoint tests ──────────────────────────────────────────
+
+
+class TestCapabilitiesEndpoint:
+    """Test /api/brightdata/capabilities."""
+
+    def setup_method(self):
+        _reset_client()
+        self._mock_client = _make_mock_client()
+        self._mock_client.get_capabilities = MagicMock(
+            return_value={
+                "products": [
+                    {"name": "Web Scraper (Datasets API)", "status": "active"},
+                    {"name": "SERP API", "status": "active"},
+                    {"name": "Web Unlocker", "status": "active"},
+                    {"name": "MCP Server", "status": "documented"},
+                ],
+                "configured": True,
+                "mode": "live",
+            }
+        )
+        self._patcher = patch(
+            "app.routes.brightdata.get_brightdata_client",
+            return_value=self._mock_client,
+        )
+        self._patcher.start()
+
+    def teardown_method(self):
+        self._patcher.stop()
+        _reset_client()
+
+    def test_capabilities_returns_4_products(self):
+        resp = client.get("/api/brightdata/capabilities")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "products" in data
+        assert len(data["products"]) == 4
+        names = [p["name"] for p in data["products"]]
+        assert "Web Scraper (Datasets API)" in names
+        assert "SERP API" in names
+        assert "Web Unlocker" in names
+        assert "MCP Server" in names
+
+    def test_capabilities_configured_flag(self):
+        resp = client.get("/api/brightdata/capabilities")
+        data = resp.json()
+        assert data["configured"] is True
+        assert data["mode"] == "live"
+
+    def test_capabilities_simulated_mode(self):
+        """When no API key is configured, mode should be simulated."""
+        self._mock_client.get_capabilities = MagicMock(
+            return_value={
+                "products": [
+                    {"name": "Web Scraper (Datasets API)", "status": "simulated"},
+                    {"name": "SERP API", "status": "simulated"},
+                    {"name": "Web Unlocker", "status": "simulated"},
+                    {"name": "MCP Server", "status": "documented"},
+                ],
+                "configured": False,
+                "mode": "simulated",
+            }
+        )
+        resp = client.get("/api/brightdata/capabilities")
+        data = resp.json()
+        assert data["configured"] is False
+        assert data["mode"] == "simulated"

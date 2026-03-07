@@ -24,6 +24,13 @@ from app.routes.demographics import router as demographics_router
 from app.routes.walkscore import router as walkscore_router
 from app.routes.insights import router as insights_router
 from app.routes.montgomery import router as montgomery_router
+from app.routes.opportunities import router as opportunities_router
+from app.routes.recommendations import (
+    router as recommendations_router,
+    evidence_router,
+)
+from app.routes.signals import router as signals_router
+from app.routes.weather import router as weather_router
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
@@ -70,3 +77,8 @@ app.include_router(demographics_router)
 app.include_router(walkscore_router)
 app.include_router(insights_router)
 app.include_router(montgomery_router)
+app.include_router(opportunities_router)
+app.include_router(recommendations_router)
+app.include_router(evidence_router)
+app.include_router(signals_router)
+app.include_router(weather_router)

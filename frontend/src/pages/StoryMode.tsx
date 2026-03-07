@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { BookOpen, Loader2, MapPin, Sparkles } from 'lucide-react';
-import { usePersona } from '../hooks/usePersona';
 import { useScenario } from '../hooks/useScenario';
 import ScenarioSelector from '../components/Scenario/ScenarioSelector';
+import { useAppState } from '../context/AppStateContext';
 import { fetchStory } from '../services/api';
 import type { StoryResponse, Property } from '../types';
 
 export default function StoryMode() {
-  const { activePersona } = usePersona();
+  const { activePersona } = useAppState();
   const { activeScenario, selectScenario } = useScenario();
   const [story, setStory] = useState<StoryResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function StoryMode() {
               <h2 className="text-2xl font-bold mb-2">{story.title}</h2>
               <p className="text-indigo-200 text-sm">
                 {activeScenario.charAt(0).toUpperCase() + activeScenario.slice(1)} scenario ·{' '}
-                {activePersona === 'city_console' ? 'City Console' : 'Entrepreneur'} view
+                {activePersona === 'city_console' ? 'Community' : 'Entrepreneur'} view
               </p>
             </div>
 

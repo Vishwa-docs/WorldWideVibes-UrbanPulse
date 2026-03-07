@@ -204,8 +204,8 @@ async def _generate_scorecard_narrative(
 ) -> str:
     """Generate a real AI narrative for the scorecard using Azure OpenAI."""
     try:
-        from app.services.llm_service import get_llm_service
-        llm = get_llm_service()
+        from app.services.llm_service import get_llm_service_safe
+        llm = get_llm_service_safe()
 
         service_types = {}
         for s in services:

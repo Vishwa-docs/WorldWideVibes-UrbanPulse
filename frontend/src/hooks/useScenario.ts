@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { ScenarioType, Scenario } from '../types';
+import { useAppState } from '../context/AppStateContext';
 
 export const SCENARIOS: Scenario[] = [
   { id: 'general', name: 'General', description: 'Balanced scoring for all factors', icon: '🎯' },
@@ -10,11 +11,8 @@ export const SCENARIOS: Scenario[] = [
 ];
 
 export function useScenario() {
-  const [activeScenario, setActiveScenario] = useState<ScenarioType>('general');
-
-  const selectScenario = useCallback((scenario: ScenarioType) => {
-    setActiveScenario(scenario);
-  }, []);
+  const { activeScenario, setActiveScenario } = useAppState();
+  const selectScenario = useCallback((scenario: ScenarioType) => setActiveScenario(scenario), [setActiveScenario]);
 
   const currentScenario = SCENARIOS.find(s => s.id === activeScenario)!;
 

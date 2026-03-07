@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import MapView from '../components/Map/MapView';
 import Sidebar from '../components/Layout/Sidebar';
 import LiveDataBar from '../components/Layout/LiveDataBar';
@@ -141,22 +142,22 @@ export default function Dashboard({ activePersona }: DashboardProps) {
         {compareIds.length > 0 && (
           <>
             <div className="w-px h-8 bg-gray-200" />
-            <a
-              href="/compare"
+            <Link
+              to="/compare"
               className="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
             >
               Compare ({compareIds.length})
-            </a>
+            </Link>
           </>
         )}
         <div className="ml-auto">
-          <a
-            href="/insights"
+          <Link
+            to="/insights"
             className="flex items-center gap-1.5 text-xs font-medium text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
           >
             <Users className="w-3.5 h-3.5" />
             City Insights
-          </a>
+          </Link>
         </div>
       </div>
 

@@ -42,6 +42,28 @@ VARIABLES = {
     "B23025_005E": "unemployed",
     "B23025_002E": "in_labor_force",
     "B08303_001E": "total_commuters",
+    # Education attainment (25+)
+    "B15003_001E": "edu_total_25plus",
+    "B15003_017E": "edu_high_school",
+    "B15003_021E": "edu_bachelors",
+    "B15003_022E": "edu_masters",
+    "B15003_025E": "edu_doctorate",
+    # Age groups
+    "B01001_003E": "age_under_5_male",
+    "B01001_027E": "age_under_5_female",
+    "B01001_020E": "age_65_66_male",
+    "B01001_044E": "age_65_66_female",
+    # Median age
+    "B01002_001E": "median_age",
+    # Means of transportation to work
+    "B08301_001E": "commute_total",
+    "B08301_003E": "commute_drove_alone",
+    "B08301_010E": "commute_public_transit",
+    "B08301_019E": "commute_walked",
+    "B08301_021E": "commute_work_from_home",
+    # Vehicles available
+    "B25044_003E": "zero_vehicle_households",
+    "B25044_001E": "total_vehicle_households",
 }
 
 VARIABLE_LIST = ",".join(VARIABLES.keys())
@@ -80,6 +102,7 @@ def _parse_row(header: list[str], row: list[str]) -> dict:
         "total_population": raw.get("total_population"),
         "median_household_income": raw.get("median_household_income"),
         "median_home_value": raw.get("median_home_value"),
+        "median_age": raw.get("median_age"),
         "housing": {
             "total_units": total_housing,
             "owner_occupied": raw.get("owner_occupied"),
@@ -104,8 +127,32 @@ def _parse_row(header: list[str], row: list[str]) -> dict:
             "in_labor_force": labor_force,
             "unemployment_rate_pct": _pct(raw.get("unemployed"), labor_force),
         },
-        "commuters": {
+        "education": {
+            "total_25plus": raw.get("edu_total_25plus"),
+            "high_school": raw.get("edu_high_school"),
+            "bachelors": raw.get("edu_bachelors"),
+            "masters": raw.get("edu_masters"),
+            "doctorate": raw.get("edu_doctorate"),
+            "bachelors_plus_pct": _pct(
+                (raw.get("edu_bachelors") or 0) + (raw.get("edu_masters") or 0) + (raw.get("edu_doctorate") or 0),
+                raw.get("edu_total_25plus"),
+            ) if raw.get("edu_total_25plus") else None,
+        },
+        "commuting": {
             "total": raw.get("total_commuters"),
+            "commute_total": raw.get("commute_total"),
+            "drove_alone": raw.get("commute_drove_alone"),
+            "public_transit": raw.get("commute_public_transit"),
+            "walked": raw.get("commute_walked"),
+            "work_from_home": raw.get("commute_work_from_home"),
+            "drove_alone_pct": _pct(raw.get("commute_drove_alone"), raw.get("commute_total")),
+            "public_transit_pct": _pct(raw.get("commute_public_transit"), raw.get("commute_total")),
+            "work_from_home_pct": _pct(raw.get("commute_work_from_home"), raw.get("commute_total")),
+        },
+        "transportation": {
+            "zero_vehicle_households": raw.get("zero_vehicle_households"),
+            "total_vehicle_households": raw.get("total_vehicle_households"),
+            "zero_vehicle_pct": _pct(raw.get("zero_vehicle_households"), raw.get("total_vehicle_households")),
         },
     }
 

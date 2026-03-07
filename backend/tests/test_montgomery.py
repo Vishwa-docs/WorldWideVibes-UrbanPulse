@@ -97,3 +97,71 @@ async def test_311_with_category_filter():
     assert resp.status_code == 200
     data = resp.json()
     assert "items" in data
+
+
+@pytest.mark.asyncio
+async def test_code_violations_endpoint():
+    """Test code violations endpoint returns expected structure."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/code-violations", params={"limit": 5})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_code_violations_with_type_filter():
+    """Test code violations endpoint with violation_type filter."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/code-violations", params={"limit": 5, "violation_type": "Overgrown"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+
+
+@pytest.mark.asyncio
+async def test_opportunity_zones_endpoint():
+    """Test opportunity zones endpoint returns expected structure."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/opportunity-zones", params={"limit": 5})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_city_owned_properties_endpoint():
+    """Test city-owned properties endpoint returns expected structure."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/city-owned-properties", params={"limit": 5})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_building_permits_endpoint():
+    """Test building permits endpoint returns expected structure."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/building-permits", params={"limit": 5})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_building_permits_with_type_filter():
+    """Test building permits endpoint with permit_type filter."""
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/montgomery/building-permits", params={"limit": 5, "permit_type": "New Construction"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data

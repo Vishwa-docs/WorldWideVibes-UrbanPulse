@@ -58,6 +58,22 @@ class WebSignal(SQLModel, table=True):
     fetched_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class SignalSnapshot(SQLModel, table=True):
+    """Historical signal snapshot used for delta/change tracking."""
+    __tablename__ = "signal_snapshots"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    property_id: int = Field(foreign_key="properties.id", index=True)
+    poi_count: int = Field(default=0)
+    avg_rating: Optional[float] = None
+    review_count: int = Field(default=0)
+    competitor_count: int = Field(default=0)
+    activity_index: float = Field(default=0.0)
+    source: str = Field(default="brightdata")
+    is_live: bool = Field(default=False)
+    fetched_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
 class Incident(SQLModel, table=True):
     """Safety/incident records from Montgomery open data."""
     __tablename__ = "incidents"

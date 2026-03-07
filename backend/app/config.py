@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     # ── BrightData ────────────────────────────────────────────────────────
     brightdata_api_token: str = ""
     brightdata_base_url: str = "https://api.brightdata.com"
+    brightdata_serp_zone: str = "serp_api1"
+    brightdata_unlocker_zone: str = "unlocker1"
 
     # ── Google Places ─────────────────────────────────────────────────────
     google_places_api_key: str = ""
@@ -41,7 +43,7 @@ class Settings(BaseSettings):
     montgomery_arcgis_base_url: str = "https://opendata.montgomeryal.gov"
 
     # ── CORS ──────────────────────────────────────────────────────────────
-    cors_origins: str = "http://localhost:5173,http://localhost:3000"
+    cors_origins: str = "http://localhost:5173,http://localhost:5174,http://localhost:3000"
 
     @property
     def cors_origin_list(self) -> list[str]:

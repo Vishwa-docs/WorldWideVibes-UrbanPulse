@@ -1,4 +1,5 @@
-import { Layers, Database } from 'lucide-react';
+import { useState } from 'react';
+import { Layers, Database, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LayerControlsProps {
   layers: Record<string, boolean>;
@@ -19,57 +20,74 @@ const MONTGOMERY_LAYERS = [
   { id: 'foot_traffic', label: 'Foot Traffic', color: 'bg-violet-400' },
   { id: 'vacant_reports', label: 'Vacant/Blight Reports', color: 'bg-rose-300' },
   { id: 'business_licenses', label: 'Business Licenses', color: 'bg-emerald-400' },
+  { id: 'code_violations', label: 'Code Violations', color: 'bg-red-600' },
+  { id: 'opportunity_zones', label: 'Opportunity Zones', color: 'bg-cyan-400' },
+  { id: 'city_owned_properties', label: 'City-Owned Parcels', color: 'bg-sky-400' },
+  { id: 'building_permits', label: 'Building Permits', color: 'bg-lime-400' },
 ];
 
 export default function LayerControls({ layers, onToggle }: LayerControlsProps) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3">
-      <div className="flex items-center gap-2 mb-2.5">
-        <Layers className="w-4 h-4 text-indigo-600" />
-        <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Map Layers</h3>
-      </div>
-      <div className="space-y-1.5">
-        {PROPERTY_LAYERS.map((layer) => (
-          <label
-            key={layer.id}
-            className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 rounded-md px-1.5 py-1 transition-colors"
-          >
-            <input
-              type="checkbox"
-              checked={layers[layer.id] ?? true}
-              onChange={() => onToggle(layer.id)}
-              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
-            />
-            <span className={`w-2.5 h-2.5 rounded-full ${layer.color}`} />
-            <span className="text-xs">{layer.label}</span>
-          </label>
-        ))}
-      </div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-1 py-0.5 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-indigo-600" />
+          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Map Layers</h3>
+        </div>
+        {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+      </button>
 
-      {/* Montgomery Open Data Layers */}
-      <div className="mt-3 pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-2 mb-2">
-          <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <h4 className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Montgomery Data</h4>
-        </div>
-        <div className="space-y-1.5">
-          {MONTGOMERY_LAYERS.map((layer) => (
-            <label
-              key={layer.id}
-              className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 rounded-md px-1.5 py-1 transition-colors"
-            >
-              <input
-                type="checkbox"
-                checked={layers[layer.id] ?? false}
-                onChange={() => onToggle(layer.id)}
-                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
-              />
-              <span className={`w-2.5 h-2.5 rounded-full ${layer.color}`} />
-              <span className="text-xs">{layer.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
+      {expanded && (
+        <>
+          <div className="mt-2.5 space-y-1.5">
+            {PROPERTY_LAYERS.map((layer) => (
+              <label
+                key={layer.id}
+                className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 rounded-md px-1.5 py-1 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={layers[layer.id] ?? true}
+                  onChange={() => onToggle(layer.id)}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
+                />
+                <span className={`w-2.5 h-2.5 rounded-full ${layer.color}`} />
+                <span className="text-xs">{layer.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Montgomery Open Data Layers */}
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Database className="w-3.5 h-3.5 text-emerald-600" />
+              <h4 className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Montgomery Data</h4>
+            </div>
+            <div className="space-y-1.5">
+              {MONTGOMERY_LAYERS.map((layer) => (
+                <label
+                  key={layer.id}
+                  className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 rounded-md px-1.5 py-1 transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={layers[layer.id] ?? false}
+                    onChange={() => onToggle(layer.id)}
+                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
+                  />
+                  <span className={`w-2.5 h-2.5 rounded-full ${layer.color}`} />
+                  <span className="text-xs">{layer.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

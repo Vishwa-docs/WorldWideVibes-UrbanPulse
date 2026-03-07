@@ -4,23 +4,33 @@ import Dashboard from './pages/Dashboard';
 import Compare from './pages/Compare';
 import StoryMode from './pages/StoryMode';
 import Insights from './pages/Insights';
-import { usePersona } from './hooks/usePersona';
+import Copilot from './pages/Copilot';
+import { AppStateProvider, useAppState } from './context/AppStateContext';
 
-function App() {
-  const { activePersona, togglePersona } = usePersona();
+function AppContent() {
+  const { activePersona } = useAppState();
 
   return (
-    <BrowserRouter>
-      <div className="h-screen flex flex-col bg-gray-100">
-        <Header activePersona={activePersona} onTogglePersona={togglePersona} />
-        <Routes>
-          <Route path="/" element={<Dashboard activePersona={activePersona} />} />
-          <Route path="/compare" element={<Compare />} />
-          <Route path="/story" element={<StoryMode />} />
-          <Route path="/insights" element={<Insights />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <div className="h-screen flex flex-col bg-gray-100">
+      <Header />
+      <Routes>
+        <Route path="/" element={<Copilot activePersona={activePersona} />} />
+        <Route path="/site" element={<Dashboard activePersona={activePersona} />} />
+        <Route path="/compare" element={<Compare />} />
+        <Route path="/story" element={<StoryMode />} />
+        <Route path="/insights" element={<Insights />} />
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AppStateProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AppStateProvider>
   );
 }
 

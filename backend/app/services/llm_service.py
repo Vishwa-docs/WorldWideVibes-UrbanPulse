@@ -1,6 +1,8 @@
 """
 LLM Service abstraction for UrbanPulse.
-Uses Azure OpenAI (AsyncAzureOpenAI) as the sole LLM provider.
+
+Uses Azure OpenAI when configured and falls back to a deterministic template
+service for local/demo reliability when credentials are missing.
 """
 import logging
 from abc import ABC, abstractmethod
@@ -22,6 +24,29 @@ class BaseLLMService(ABC):
         max_tokens: int = 1024,
     ) -> str:
         pass
+
+
+class FallbackLLMService(BaseLLMService):
+    """Deterministic fallback text generator used when Azure is unavailable."""
+
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> str:
+        del system_prompt, temperature, max_tokens
+        summary = prompt.strip().splitlines()[:8]
+        body = "\n".join(f"- {line[:180]}" for line in summary if line.strip())
+        if not body:
+            body = "- No prompt context was provided."
+        return (
+            "AI fallback mode is active (no Azure credentials). "
+            "Here is a deterministic recommendation summary:\n"
+            f"{body}\n"
+            "- Use the live-refresh actions to improve confidence and freshness."
+        )
 
 
 class AzureOpenAIService(BaseLLMService):
@@ -69,8 +94,7 @@ class AzureOpenAIService(BaseLLMService):
 def get_llm_service() -> BaseLLMService:
     """Factory function to get the Azure OpenAI LLM service.
 
-    Raises ``RuntimeError`` when required Azure OpenAI configuration values
-    are missing so the error surfaces immediately on startup.
+    Raises when required Azure settings are missing (legacy strict behavior).
     """
     from app.config import get_settings
 
@@ -98,3 +122,12 @@ def get_llm_service() -> BaseLLMService:
         deployment=settings.azure_openai_deployment,
         api_version=settings.azure_openai_api_version,
     )
+
+
+def get_llm_service_safe() -> BaseLLMService:
+    """Get Azure service when available, otherwise deterministic fallback."""
+    try:
+        return get_llm_service()
+    except RuntimeError as e:
+        logger.warning("%s. Falling back to template LLM.", e)
+        return FallbackLLMService()

@@ -1,4 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "tailwindcss";
+
+:root {
+  --up-bg: #f4f7fb;
+  --up-ink: #10203a;
+  --up-muted: #5d6a80;
+  --up-brand: #1f4ed8;
+  --up-accent: #0891b2;
+  --up-card: #ffffff;
+}
+
+body {
+  font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--up-ink);
+  background:
+    radial-gradient(1200px 500px at 8% -5%, rgba(31, 78, 216, 0.12), transparent 60%),
+    radial-gradient(900px 450px at 95% 0%, rgba(8, 145, 178, 0.1), transparent 52%),
+    var(--up-bg);
+}
+
+h1, h2, h3, .font-display {
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+}
 
 /* ── Fix Leaflet + Tailwind v4 conflict ─────────────────────────────────
    Tailwind v4 preflight sets img { max-width:100%; height:auto; display:block }

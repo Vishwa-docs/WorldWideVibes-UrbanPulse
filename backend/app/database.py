@@ -14,7 +14,7 @@ from app.config import settings
 # Import all models so their tables are registered with SQLModel.metadata
 from app.models import (  # noqa: F401
     Property, PropertyScore, WebSignal, Incident,
-    ServiceLocation, CityProject, Watchlist,
+    ServiceLocation, CityProject, Watchlist, SignalSnapshot,
 )
 
 # SQLite requires `check_same_thread=False` when used with FastAPI's

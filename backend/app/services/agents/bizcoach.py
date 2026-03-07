@@ -1,5 +1,7 @@
 """BizCoach Agent - provides business-oriented recommendations."""
-from app.services.llm_service import get_llm_service
+from app.services.llm_service import get_llm_service_safe
+
+get_llm_service = get_llm_service_safe
 
 SYSTEM_PROMPT = """You are the BizCoach Agent for UrbanPulse, a site-selection platform for Montgomery, AL.
 Your role is to provide practical, actionable business advice for entrepreneurs considering a location.

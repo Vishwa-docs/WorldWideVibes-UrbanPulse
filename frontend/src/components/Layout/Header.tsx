@@ -1,22 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Activity, Map, GitCompareArrows, BookOpen, Sparkles } from 'lucide-react';
-import PersonaToggle from '../Persona/PersonaToggle';
+import { Activity, Home, Map, GitCompareArrows, BookOpen, Sparkles } from 'lucide-react';
 import BrightDataBadge from './BrightDataBadge';
-import type { PersonaType } from '../../types';
-
-interface HeaderProps {
-  activePersona: PersonaType;
-  onTogglePersona: () => void;
-}
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: Map },
+  { to: '/', label: 'Copilot', icon: Home },
+  { to: '/site', label: 'Site Workspace', icon: Map },
   { to: '/compare', label: 'Compare', icon: GitCompareArrows },
   { to: '/story', label: 'Story Mode', icon: BookOpen },
   { to: '/insights', label: 'Insights', icon: Sparkles },
 ];
 
-export default function Header({ activePersona, onTogglePersona }: HeaderProps) {
+export default function Header() {
   const location = useLocation();
 
   return (
@@ -52,7 +46,9 @@ export default function Header({ activePersona, onTogglePersona }: HeaderProps) 
       </div>
       <div className="flex items-center gap-3">
         <BrightDataBadge />
-        <PersonaToggle activePersona={activePersona} onToggle={onTogglePersona} />
+        <span className="text-xs text-indigo-300 font-medium px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
+          Montgomery, AL
+        </span>
       </div>
     </header>
   );

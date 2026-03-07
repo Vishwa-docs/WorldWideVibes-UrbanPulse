@@ -18,8 +18,8 @@ export function useProperties(persona: PersonaType, scenario: ScenarioType) {
       ]);
       setProperties(props);
       setRanked(rankedData.items || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load properties');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load properties');
     } finally {
       setLoading(false);
     }
@@ -32,8 +32,8 @@ export function useProperties(persona: PersonaType, scenario: ScenarioType) {
     try {
       await computeScores(scenario, persona);
       await load();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to recompute scores');
     } finally {
       setLoading(false);
     }

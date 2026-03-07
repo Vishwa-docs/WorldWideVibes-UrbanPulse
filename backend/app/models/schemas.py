@@ -148,3 +148,122 @@ class WatchlistResponse(BaseModel):
     """List of watchlist items."""
     items: list[WatchlistItemResponse]
     total: int
+
+
+# ── Workforce / Opportunity Copilot ─────────────────────────────────────────
+
+class ProvenanceSource(BaseModel):
+    """Source metadata attached to insights and recommendations."""
+    id: str
+    label: str
+    source_type: str
+    is_live: bool = False
+    observed_at: Optional[datetime] = None
+    confidence: float = 0.5
+    url: Optional[str] = None
+    note: Optional[str] = None
+
+
+class OpportunityScorecard(BaseModel):
+    """Role-specific score bundle for a property opportunity."""
+    resident_fit_score: float
+    business_opportunity_score: float
+    city_impact_score: float
+    overall_score: float
+
+
+class OpportunityRecommendation(BaseModel):
+    """One ranked recommendation in query output."""
+    rank: int
+    property: PropertyResponse
+    scores: OpportunityScorecard
+    top_factors: list[str] = []
+    evidence_ids: list[str] = []
+
+
+class OpportunitiesOverviewResponse(BaseModel):
+    """High-level dashboard summary for a role/scenario."""
+    role: str
+    scenario: str
+    total_properties: int
+    role_focus: str
+    kpis: dict[str, float | int | str]
+    top_recommendations: list[OpportunityRecommendation] = []
+    sources: list[ProvenanceSource] = []
+    generated_at: datetime
+    confidence: float
+
+
+class RecommendationQueryRequest(BaseModel):
+    """Structured recommendation query request."""
+    query: str = ""
+    role: str = "resident"
+    scenario: str = "general"
+    limit: int = Field(default=5, ge=1, le=20)
+    refresh_live: bool = False
+    property_ids: Optional[list[int]] = None
+
+
+class RecommendationQueryResponse(BaseModel):
+    """Structured recommendation query response."""
+    recommendation_id: str
+    role: str
+    scenario: str
+    query: str
+    summary: str
+    recommendations: list[OpportunityRecommendation]
+    sources: list[ProvenanceSource]
+    generated_at: datetime
+    confidence: float
+
+
+class EvidenceResponse(BaseModel):
+    """Evidence cards for a generated recommendation set."""
+    recommendation_id: str
+    evidence: list[ProvenanceSource]
+    generated_at: datetime
+
+
+class SignalsRefreshRequest(BaseModel):
+    """Signal refresh request."""
+    property_ids: Optional[list[int]] = None
+    force_live: bool = False
+    limit: int = Field(default=50, ge=1, le=300)
+
+
+class SignalRefreshItem(BaseModel):
+    """Per-property signal refresh status."""
+    property_id: int
+    address: str
+    activity_index: float
+    is_live: bool
+    source: str
+    fetched_at: datetime
+
+
+class SignalsRefreshResponse(BaseModel):
+    """Bulk signal refresh response."""
+    refreshed_count: int
+    mode: str
+    items: list[SignalRefreshItem]
+    sources: list[ProvenanceSource]
+    generated_at: datetime
+
+
+class SignalChangeItem(BaseModel):
+    """Delta between current and previous signal snapshots."""
+    property_id: int
+    address: str
+    previous_activity_index: float
+    current_activity_index: float
+    delta_activity_index: float
+    previous_fetched_at: Optional[datetime] = None
+    current_fetched_at: Optional[datetime] = None
+
+
+class SignalChangesResponse(BaseModel):
+    """Signal change feed showing activity deltas over a time window."""
+    window_hours: int
+    changes: list[SignalChangeItem]
+    generated_at: datetime
+    sources: list[ProvenanceSource]

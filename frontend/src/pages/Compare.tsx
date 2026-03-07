@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GitCompareArrows, Loader2, X, Search } from 'lucide-react';
-import { usePersona } from '../hooks/usePersona';
 import { useScenario } from '../hooks/useScenario';
+import { useAppState } from '../context/AppStateContext';
 import ScenarioSelector from '../components/Scenario/ScenarioSelector';
 import { fetchProperties, compareProperties } from '../services/api';
 import type { Property, CompareResponse, ComparePropertyItem } from '../types';
@@ -27,7 +27,7 @@ const SCORE_KEYS = [
 ] as const;
 
 export default function Compare() {
-  const { activePersona } = usePersona();
+  const { activePersona } = useAppState();
   const { activeScenario, selectScenario } = useScenario();
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -158,9 +158,9 @@ export default function Compare() {
         )}
 
         {comparison && !loading && (
-          <div>
+          <div className="overflow-hidden">
             {/* Side by side cards */}
-            <div className={`grid gap-4 mb-6 ${comparison.items.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            <div className={`grid gap-4 mb-6 grid-cols-1 ${comparison.items.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
               {comparison.items.map((item: ComparePropertyItem) => (
                 <div key={item.property.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                   <h3 className="text-sm font-semibold text-gray-900 mb-1 truncate">{item.property.address}</h3>
@@ -172,7 +172,7 @@ export default function Compare() {
 
                   {/* Overall score */}
                   <div className={`text-center py-3 rounded-lg border mb-4 ${overallBg(item.scores.overall_score)}`}>
-                    <p className="text-3xl font-bold">{item.scores.overall_score.toFixed(1)}</p>
+                    <p className="text-2xl font-bold">{item.scores.overall_score.toFixed(1)}</p>
                     <p className="text-xs mt-0.5 opacity-75">Overall Score</p>
                   </div>
 
@@ -236,9 +236,9 @@ export default function Compare() {
                         const value = item.scores[key];
                         const colors = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500'];
                         return (
-                          <div key={item.property.id} className="flex items-center gap-3">
-                            <span className="text-[10px] text-gray-400 w-24 truncate">{item.property.address.split(',')[0]}</span>
-                            <div className="flex-1 bg-gray-100 rounded-full h-2.5">
+                          <div key={item.property.id} className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-400 w-20 min-w-0 truncate flex-shrink-0">{item.property.address.split(',')[0]}</span>
+                            <div className="flex-1 min-w-0 bg-gray-100 rounded-full h-2.5">
                               <div
                                 className={`h-2.5 rounded-full ${colors[idx]}`}
                                 style={{ width: `${(value / 10) * 100}%` }}

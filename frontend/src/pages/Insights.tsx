@@ -5,6 +5,9 @@ import ScenarioSelector from '../components/Scenario/ScenarioSelector';
 import DemographicsPanel from '../components/Insights/DemographicsPanel';
 import WorkforcePanel from '../components/Insights/WorkforcePanel';
 import DataSourcesPanel from '../components/Insights/DataSourcesPanel';
+import AnalyticsCharts from '../components/Insights/AnalyticsCharts';
+import WebIntelligence from '../components/Insights/WebIntelligence';
+import WeatherWidget from '../components/Insights/WeatherWidget';
 import { fetchMarketGaps, fetchProperties } from '../services/api';
 import type { MarketGapResponse, Property } from '../types';
 
@@ -91,11 +94,18 @@ export default function Insights() {
           </div>
         </div>
 
+        {/* Analytics Charts */}
+        <AnalyticsCharts />
+
+        {/* Bright Data Web Intelligence */}
+        <WebIntelligence />
+
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column: Demographics */}
           <div className="lg:col-span-1 space-y-4">
             <DemographicsPanel />
+            <WeatherWidget />
             <WorkforcePanel />
             <DataSourcesPanel />
 

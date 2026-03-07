@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# UrbanPulse — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript SPA for the UrbanPulse civic-intelligence platform.
 
-Currently, two official plugins are available:
+## Tech
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Tool | Version |
+|------|---------|
+| React | 19 |
+| TypeScript | 5.9 |
+| Vite | 7.3 |
+| Tailwind CSS | v4 |
+| Recharts | 3.x |
+| Leaflet | 1.9 |
 
-## React Compiler
+## Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/` | `CopilotPage` | Opportunity Copilot — role-based recommendations |
+| `/site` | `DashboardPage` | Site Selection — Leaflet map with 14 layers + AI Agent Chat |
+| `/compare` | `ComparePage` | Side-by-side property comparison |
+| `/story` | `StoryPage` | Story mode narrative |
+| `/insights` | `InsightsPage` | Analytics charts + Web Intelligence |
 
-## Expanding the ESLint configuration
+## Key Components
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **`Insights/AnalyticsCharts.tsx`** — 7 recharts visualizations (bar, pie, radar, histogram)
+- **`Insights/WebIntelligence.tsx`** — SERP search + URL scraper + Bright Data capabilities
+- **`Insights/DemographicsPanel.tsx`** — Census ACS demographics display (31 variables)
+- **`Agent/AgentChat.tsx`** — AI copilot chat (collapsible, in Site Workspace)
+- **`Map/LayerControls.tsx`** — 14 toggleable data layers (collapsible)
+- **`Map/`** — Leaflet map, property markers
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## API Client
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+All backend calls go through `src/services/api.ts` — typed functions with Axios, auto-configured base URL.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Development
+
+```bash
+npm install
+npm run dev          # dev server on :5173
+npm run build        # production build
+npx tsc --noEmit     # type-check only
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build        # outputs to dist/
 ```
+
+Static files in `dist/` can be deployed to Vercel, Netlify, or any static host.
+
+## Environment
+
+The frontend reads `VITE_API_BASE_URL` at build time. Defaults to `http://localhost:8000` in development.

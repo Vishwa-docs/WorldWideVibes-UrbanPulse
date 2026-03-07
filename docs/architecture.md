@@ -7,7 +7,7 @@
 │                        FRONTEND (React + Vite)                  │
 │  ┌──────────┐ ┌────────────┐ ┌──────────┐ ┌────────────────┐   │
 │  │ MapView  │ │ Scorecards │ │ Compare  │ │ AgentChat      │   │
-│  │ (Leaflet)│ │            │ │ View     │ │ (Copilot UI)   │   │
+│  │ (Leaflet)│ │ + Charts   │ │ View     │ │ (Copilot UI)   │   │
 │  └────┬─────┘ └─────┬──────┘ └────┬─────┘ └──────┬─────────┘   │
 │       │              │             │               │             │
 │  ┌────┴──────────────┴─────────────┴───────────────┴──────────┐  │
@@ -26,8 +26,8 @@
 │         │             │               │               │          │
 │  ┌──────┴──────┐ ┌────┴─────┐ ┌───────┴──────┐ ┌─────┴───────┐  │
 │  │  Scoring    │ │ Bright   │ │  LLM Service │ │  Agent      │  │
-│  │  Engine     │ │ Data     │ │  (Gemini /   │ │  Orchestr.  │  │
-│  │             │ │ Client   │ │   Fallback)  │ │             │  │
+│  │  Engine     │ │ Data     │ │  (Azure      │ │  Orchestr.  │  │
+│  │             │ │ Client   │ │   OpenAI)    │ │             │  │
 │  └──────┬──────┘ └────┬─────┘ └───────┬──────┘ └──────┬──────┘  │
 │         │             │               │                │         │
 │  ┌──────┴─────────────┴───────────────┴────────────────┴──────┐  │
@@ -38,11 +38,11 @@
 └─────────────────────────────────────────────────────────────────┘
 
          ▲                               ▲
-         │  CSV / GeoJSON                │  Web Scraper API
+         │  Live REST API                │  Web Scraper API
 ┌────────┴────────┐             ┌────────┴────────┐
 │  Montgomery     │             │   Bright Data   │
 │  Open Data      │             │   (POIs,        │
-│  Portal         │             │    Reviews,     │
+│  (ArcGIS REST)  │             │    Reviews,     │
 │                 │             │    Competition) │
 └─────────────────┘             └─────────────────┘
 ```
@@ -52,24 +52,28 @@
 ### 1. Data Ingestion
 
 ```
-Open Data Portal ──► CSV download ──► ingest_montgomery.py ──► SQLite DB
-                                      (column mapping via
-                                       config/cities/montgomery.json)
+Montgomery ArcGIS REST APIs ──► arcgis_service.py ──► Live JSON ──► SQLite DB
++ Seed script (seed_sample.py) ──► 50 demo properties if no network
 ```
 
-The ingestion pipeline reads CSV files from `backend/data/raw/` and maps columns
-according to the city configuration file at `config/cities/montgomery.json`. This
-supports three data types:
+The platform queries **eight** ArcGIS REST endpoints in real time — **all returning live data with no mock fallbacks**:
 
-| Source File | Target Table | Description |
+| Endpoint | Description | Source |
 |---|---|---|
-| `parcels.csv` | `properties` | Property parcels with zoning, coordinates, ownership |
-| `incidents.csv` | `incidents` | Police/911 incidents with type, severity, location |
-| `city_projects.csv` | `city_projects` | Infrastructure projects with status and budget |
+| `mgmgis.montgomeryal.gov/.../Received_311_Service_Request` | 311 service requests | Montgomery hosted datasets |
+| `mgmgis.montgomeryal.gov/.../Business_License` | Active business licenses | Montgomery hosted datasets |
+| `services7.arcgis.com/.../Most_Visited_Locations` | Foot traffic heat data | ArcGIS Online |
+| `services7.arcgis.com/.../Visitors_Origin` | Visitor origin patterns | ArcGIS Online |
+| `mgmgis.montgomeryal.gov/.../Code_Violations` | Code enforcement cases | Montgomery hosted datasets |
+| `mgmgis.montgomeryal.gov/.../City_Owned_Properities` | City-owned parcels | Montgomery hosted datasets |
+| `mgmgis.montgomeryal.gov/.../Construction_Permits` | Building permits | Montgomery hosted datasets |
+| `services7.arcgis.com/.../Opportunity_Zones` | Federal tax incentive zones | ArcGIS Online |
 
-For demo purposes, `scripts/seed_sample.py` generates 50 realistic Montgomery
-properties, 100 incidents, 20 service locations, and 5 city projects without
-requiring real CSV files.
+If an ArcGIS endpoint is unreachable, the service logs a warning and returns an empty list — no simulated data is injected.
+
+For initial setup, `scripts/seed_sample.py` generates 50 realistic Montgomery
+properties, 100 incidents, 20 service locations, and 5 city projects for the
+local SQLite database.
 
 ### 2. Scoring Pipeline
 
@@ -117,8 +121,8 @@ The AI agent system follows a **coordinator-specialist** pattern:
                          ▼
                  ┌───────────────┐
                  │  LLM Service  │
-                 │  (Gemini or   │
-                 │   Fallback)   │
+                 │  (Azure       │
+                 │   OpenAI)     │
                  └───────────────┘
 ```
 
@@ -146,44 +150,57 @@ that the Orchestrator folds into the unified response.
 
 The LLM layer supports multiple providers through a common `BaseLLMService` interface:
 
-- **`GeminiService`** — Uses Google Gemini 2.0 Flash via the `google-generativeai` SDK
-- **`FallbackLLMService`** — Template-based responses when no API key is configured
+- **`AzureOpenAIService`** — Uses Azure OpenAI GPT-4o-2 (primary provider)
+- **`FallbackLLMService`** — Deterministic template-based responses when no API key is configured
 
 This abstraction allows swapping LLM providers without touching agent or business logic.
 
-## Bright Data Integration
+## Bright Data Integration (4 Products)
 
 ```
-Property Coordinates ──► BrightDataClient ──► Bright Data Web Scraper API
-                                                    │
-                              ┌──────────────────────┤
-                              ▼                      ▼
-                        fetch_pois_near       fetch_reviews_near
-                              │                      │
-                              └───────┬──────────────┘
-                                      ▼
-                            fetch_activity_signals
-                                      │
-                                      ▼
-                            ┌─────────────────┐
-                            │  WebSignal DB   │
-                            │  poi_count      │
-                            │  avg_rating     │
-                            │  review_count   │
-                            │  competitor_cnt │
-                            │  activity_index │
-                            └─────────────────┘
+                           BrightDataClient
+                                 │
+              ┌──────────┬───────┼───────────┬──────────────┐
+              ▼          ▼       ▼           ▼              ▼
+        Web Scraper   SERP API  Web        MCP Server   Capabilities
+        (Datasets)              Unlocker   (documented)   endpoint
+              │          │       │
+              ▼          ▼       ▼
+        fetch_pois   search    scrape
+        fetch_revs   _serp     _url
+              │          │       │
+              ▼          ▼       ▼
+        WebSignal DB  JSON     Markdown
+                     results   content
 ```
+
+### Products Integrated
+
+| # | Product | Endpoint | Purpose |
+|---|---------|----------|---------|
+| 1 | **Web Scraper** (Datasets API) | `POST /datasets/v3/trigger` | Google Maps POI & review data |
+| 2 | **SERP API** | `POST /request` (SERP zone) | Local search engine results |
+| 3 | **Web Unlocker** | `POST /request` (Unlocker zone) | Scrape any page as markdown |
+| 4 | **MCP Server** | `mcp.brightdata.com/sse` | AI agent web data access |
 
 The `BrightDataClient` operates in two modes:
 
-- **Live mode** (`BRIGHTDATA_API_TOKEN` configured): Calls the Bright Data Web Scraper
-  API to query Google Maps for nearby businesses, reviews, and competition density.
-- **Simulated mode** (no token): Returns realistic mock data seeded with deterministic
-  randomness based on location coordinates, allowing full demo functionality.
+- **Live mode** (`BRIGHTDATA_API_TOKEN` configured): Calls Bright Data APIs
+  for real-time web data collection across all products.
+- **Fallback mode** (no token): Returns deterministic placeholder data for each product,
+  allowing demo functionality. All ArcGIS, Census, and Weather data remain fully
+  live regardless of Bright Data configuration.
 
-Signals are cached in the `web_signals` table and can be refreshed on demand via
-`POST /api/brightdata/refresh/{property_id}`.
+### API Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/brightdata/signals/{id}` | GET | Web signals for a property |
+| `/api/brightdata/serp` | POST | SERP API search |
+| `/api/brightdata/serp/local` | GET | Quick local Montgomery search |
+| `/api/brightdata/scrape` | POST | Scrape URL as markdown |
+| `/api/brightdata/capabilities` | GET | List all integrated products |
+| `/api/brightdata/status` | GET | Configuration status |
 
 ## Scoring Engine
 

@@ -1,5 +1,7 @@
 """Risk & Safety Lens Agent - analyzes safety and risk factors."""
-from app.services.llm_service import get_llm_service
+from app.services.llm_service import get_llm_service_safe
+
+get_llm_service = get_llm_service_safe
 
 SYSTEM_PROMPT = """You are the Risk & Safety Lens Agent for UrbanPulse, a site-selection platform for Montgomery, AL.
 Your role is to assess safety conditions and risk factors for potential business locations.

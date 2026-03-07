@@ -1,5 +1,7 @@
 """Equity Lens Agent - analyzes equity and service gap dimensions."""
-from app.services.llm_service import get_llm_service
+from app.services.llm_service import get_llm_service_safe
+
+get_llm_service = get_llm_service_safe
 
 SYSTEM_PROMPT = """You are the Equity Lens Agent for UrbanPulse, a site-selection platform for Montgomery, AL.
 Your role is to analyze properties through an equity and social impact lens.

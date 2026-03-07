@@ -43,3 +43,7 @@ backend/data/raw/*.geojson
 *.log
 backend/.venv/
 nohup.out
+
+sample_prompts/
+demo-video.md
+deploy-free.md

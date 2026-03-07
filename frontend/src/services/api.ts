@@ -22,6 +22,22 @@ import type {
   VacantPropertyReport,
   WorkforceData,
   DataSourcesSummary,
+  OpportunityRole,
+  OpportunitiesOverviewResponse,
+  RecommendationQueryRequest,
+  RecommendationQueryResponse,
+  EvidenceResponse,
+  SignalsRefreshResponse,
+  SignalChangesResponse,
+  SerpResponse,
+  ScrapeResponse,
+  BrightDataCapabilities,
+  CodeViolation,
+  OpportunityZone,
+  CityOwnedProperty,
+  BuildingPermit,
+  WeatherCurrent,
+  WeatherForecast,
 } from '../types';
 
 const api = axios.create({
@@ -79,7 +95,9 @@ export const removeFromWatchlist = (id: number) =>
 // ── Export ──────────────────────────────────────────────────────────────
 export const exportCSV = (scenario: ScenarioType, persona: PersonaType) => {
   const params = new URLSearchParams({ scenario, persona });
-  window.open(`/api/export/csv?${params}`, '_blank');
+  const base = (api.defaults.baseURL || '').replace(/\/$/, '');
+  const url = `${base}/api/export/csv?${params}`;
+  window.open(url, '_blank');
 };
 
 // ── Agent / AI ──────────────────────────────────────────────────────────
@@ -146,5 +164,80 @@ export const fetchWorkforceData = () =>
 // ── Data Sources ────────────────────────────────────────────────────────
 export const fetchDataSources = () =>
   api.get<DataSourcesSummary>('/api/montgomery/data-sources').then(r => r.data);
+
+// ── Workforce Copilot ───────────────────────────────────────────────────
+export const fetchOpportunitiesOverview = (role: OpportunityRole, scenario: ScenarioType) =>
+  api.get<OpportunitiesOverviewResponse>('/api/opportunities/overview', {
+    params: { role, scenario },
+  }).then(r => r.data);
+
+export const queryRecommendations = (body: RecommendationQueryRequest) =>
+  api.post<RecommendationQueryResponse>('/api/recommendations/query', body).then(r => r.data);
+
+export const fetchEvidence = (recommendationId: string) =>
+  api.get<EvidenceResponse>(`/api/evidence/${recommendationId}`).then(r => r.data);
+
+export const refreshSignals = (params?: { property_ids?: number[]; force_live?: boolean; limit?: number }) =>
+  api.post<SignalsRefreshResponse>('/api/signals/refresh', {
+    property_ids: params?.property_ids,
+    force_live: params?.force_live ?? false,
+    limit: params?.limit ?? 50,
+  }).then(r => r.data);
+
+export const fetchSignalChanges = (windowHours = 24) =>
+  api.get<SignalChangesResponse>('/api/signals/changes', {
+    params: { window_hours: windowHours },
+  }).then(r => r.data);
+
+// ── Bright Data SERP & Scrape ───────────────────────────────────────────
+export const searchSerp = (query: string, engine = 'google', numResults = 10) =>
+  api.post<SerpResponse>('/api/brightdata/serp', {
+    query,
+    engine,
+    location: 'Montgomery,Alabama,United States',
+    num_results: numResults,
+  }).then(r => r.data);
+
+export const searchLocal = (q: string, category = 'business') =>
+  api.get<SerpResponse>('/api/brightdata/serp/local', {
+    params: { q, category },
+  }).then(r => r.data);
+
+export const scrapeUrl = (url: string, maxLength = 8000) =>
+  api.post<ScrapeResponse>('/api/brightdata/scrape', {
+    url,
+    max_length: maxLength,
+  }).then(r => r.data);
+
+export const fetchBrightDataCapabilities = () =>
+  api.get<BrightDataCapabilities>('/api/brightdata/capabilities').then(r => r.data);
+
+// ── Montgomery Extended Data ────────────────────────────────────────────
+export const fetchCodeViolations = (limit = 200, violationType?: string) =>
+  api.get<{ items: CodeViolation[]; total: number }>('/api/montgomery/code-violations', {
+    params: { limit, ...(violationType ? { violation_type: violationType } : {}) },
+  }).then(r => r.data);
+
+export const fetchOpportunityZones = (limit = 100) =>
+  api.get<{ items: OpportunityZone[]; total: number }>('/api/montgomery/opportunity-zones', {
+    params: { limit },
+  }).then(r => r.data);
+
+export const fetchCityOwnedProperties = (limit = 200) =>
+  api.get<{ items: CityOwnedProperty[]; total: number }>('/api/montgomery/city-owned-properties', {
+    params: { limit },
+  }).then(r => r.data);
+
+export const fetchBuildingPermits = (limit = 200, permitType?: string) =>
+  api.get<{ items: BuildingPermit[]; total: number }>('/api/montgomery/building-permits', {
+    params: { limit, ...(permitType ? { permit_type: permitType } : {}) },
+  }).then(r => r.data);
+
+// ── Weather ─────────────────────────────────────────────────────────────
+export const fetchCurrentWeather = () =>
+  api.get<WeatherCurrent>('/api/weather/current').then(r => r.data);
+
+export const fetchWeatherForecast = () =>
+  api.get<WeatherForecast>('/api/weather/forecast').then(r => r.data);
 
 export default api;

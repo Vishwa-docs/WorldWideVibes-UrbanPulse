@@ -1,5 +1,6 @@
-"""Bright Data signal endpoints."""
-from fastapi import APIRouter, Depends, HTTPException
+"""Bright Data signal endpoints — Web Scraper, SERP API, and Web Unlocker."""
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models.property import Property, WebSignal
@@ -131,10 +132,90 @@ async def seed_all_signals(session: Session = Depends(get_session)):
 
 @router.get("/status")
 async def brightdata_status():
-    """Check Bright Data configuration status."""
+    """Check Bright Data configuration status and capabilities."""
     client = get_brightdata_client()
     return {
         "configured": client.is_configured,
         "base_url": client.base_url,
         "mode": "live" if client.is_configured else "simulated",
     }
+
+
+# ── SERP API ────────────────────────────────────────────────────────────
+
+
+class SerpRequest(BaseModel):
+    query: str
+    engine: str = "google"
+    location: str = "Montgomery,Alabama,United States"
+    num_results: int = 10
+
+
+@router.post("/serp")
+async def search_serp(req: SerpRequest):
+    """
+    Search via Bright Data SERP API for local business intelligence.
+
+    Returns structured search engine results for Montgomery-related queries.
+    Useful for competitive analysis, market research, and local trend discovery.
+    """
+    client = get_brightdata_client()
+    return await client.search_serp(
+        query=req.query,
+        engine=req.engine,
+        location=req.location,
+        num_results=req.num_results,
+    )
+
+
+@router.get("/serp/local")
+async def search_local(
+    q: str = Query(..., description="Search query (e.g., 'grocery stores')"),
+    category: str = Query("business", description="Business category"),
+):
+    """
+    Quick local SERP search for Montgomery, AL businesses.
+
+    Shortcut that adds 'Montgomery AL' to the query automatically.
+    """
+    client = get_brightdata_client()
+    full_query = f"{q} {category} Montgomery AL"
+    return await client.search_serp(query=full_query, num_results=8)
+
+
+# ── Web Unlocker ────────────────────────────────────────────────────────
+
+
+class ScrapeRequest(BaseModel):
+    url: str
+    max_length: int = 8000
+
+
+@router.post("/scrape")
+async def scrape_url(req: ScrapeRequest):
+    """
+    Scrape a public webpage via Bright Data's Web Unlocker.
+
+    Returns clean markdown content suitable for AI/LLM consumption.
+    Handles anti-bot protection, CAPTCHAs, and dynamic rendering.
+    """
+    client = get_brightdata_client()
+    result = await client.scrape_url(req.url)
+    # Respect custom max_length
+    if req.max_length and len(result.get("content", "")) > req.max_length:
+        result["content"] = result["content"][:req.max_length] + "\n\n... (truncated)"
+    return result
+
+
+# ── Capabilities ────────────────────────────────────────────────────────
+
+
+@router.get("/capabilities")
+async def brightdata_capabilities():
+    """
+    List all Bright Data products integrated into UrbanPulse.
+
+    Returns details on Web Scraper, SERP API, Web Unlocker, and MCP Server.
+    """
+    client = get_brightdata_client()
+    return client.get_capabilities()

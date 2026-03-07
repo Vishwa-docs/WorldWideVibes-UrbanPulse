@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { PersonaType, Persona } from '../types';
+import { useAppState } from '../context/AppStateContext';
 
 export const PERSONAS: Record<PersonaType, Persona> = {
   city_console: {
@@ -17,17 +18,8 @@ export const PERSONAS: Record<PersonaType, Persona> = {
 };
 
 export function usePersona() {
-  const [activePersona, setActivePersona] = useState<PersonaType>('city_console');
-
-  const togglePersona = useCallback(() => {
-    setActivePersona(prev =>
-      prev === 'city_console' ? 'entrepreneur' : 'city_console',
-    );
-  }, []);
-
-  const selectPersona = useCallback((persona: PersonaType) => {
-    setActivePersona(persona);
-  }, []);
+  const { activePersona, togglePersona, setActivePersona } = useAppState();
+  const selectPersona = useCallback((persona: PersonaType) => setActivePersona(persona), [setActivePersona]);
 
   return {
     activePersona,

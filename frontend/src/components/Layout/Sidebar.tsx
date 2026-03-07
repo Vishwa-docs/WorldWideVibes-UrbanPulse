@@ -55,7 +55,7 @@ export default function Sidebar({
     : ranked;
 
   return (
-    <aside className="w-[340px] bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+    <aside className="w-[340px] bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden min-h-0">
       {/* Scenario Selector */}
       <div className="p-3 border-b border-gray-200">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Scenario</p>
@@ -64,7 +64,7 @@ export default function Sidebar({
 
       {/* Scorecard for selected property */}
       {selectedProperty && (
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200 overflow-y-auto max-h-[40vh] flex-shrink-0">
           <PropertyScorecard
             property={selectedProperty}
             scorecard={scorecard}
@@ -115,14 +115,14 @@ export default function Sidebar({
       </div>
 
       {/* Bottom section */}
-      <div className="p-3 border-t border-gray-200 space-y-2">
-        <LayerControls layers={layers} onToggle={onToggleLayer} />
-        <ExportButton scenario={activeScenario} persona={activePersona} />
+      <div className="p-3 border-t border-gray-200 space-y-2 overflow-y-auto max-h-[50vh] flex-shrink-0">
         <AgentChat
           persona={activePersona}
           scenario={activeScenario}
           onPropertySelect={onSelectProperty}
         />
+        <LayerControls layers={layers} onToggle={onToggleLayer} />
+        <ExportButton scenario={activeScenario} persona={activePersona} />
       </div>
     </aside>
   );

@@ -506,6 +506,131 @@ curl http://localhost:8000/api/brightdata/status
 
 ---
 
+### `POST /api/brightdata/serp`
+
+Search via Bright Data SERP API for local business intelligence.
+
+**Request Body**:
+```json
+{
+  "query": "grocery stores Montgomery AL",
+  "engine": "google",
+  "location": "Montgomery,Alabama,United States",
+  "num_results": 10
+}
+```
+
+**Response**:
+```json
+{
+  "query": "grocery stores Montgomery AL",
+  "engine": "google",
+  "location": "Montgomery,Alabama,United States",
+  "result_count": 8,
+  "results": [
+    {
+      "title": "Local Business Directory — grocery stores in Montgomery, AL",
+      "url": "https://www.yellowpages.com/montgomery-al/grocery+stores",
+      "description": "Find the best grocery stores options in Montgomery, Alabama.",
+      "position": 1
+    }
+  ],
+  "source": "brightdata_serp",
+  "is_live": true,
+  "fetched_at": "2026-03-07T14:30:00Z"
+}
+```
+
+---
+
+### `GET /api/brightdata/serp/local`
+
+Quick local SERP search (auto-appends "Montgomery AL").
+
+**Query Parameters**:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | (required) | Search query |
+| `category` | string | `business` | Business category |
+
+**Example**:
+```bash
+curl "http://localhost:8000/api/brightdata/serp/local?q=daycare&category=childcare"
+```
+
+---
+
+### `POST /api/brightdata/scrape`
+
+Scrape a public webpage via Bright Data's Web Unlocker as markdown.
+
+**Request Body**:
+```json
+{
+  "url": "https://example.com/page-to-scrape",
+  "max_length": 8000
+}
+```
+
+**Response**:
+```json
+{
+  "url": "https://example.com/page-to-scrape",
+  "content": "# Page Title\n\nExtracted markdown content...",
+  "content_length": 4523,
+  "source": "brightdata_unlocker",
+  "is_live": true,
+  "fetched_at": "2026-03-07T14:30:00Z"
+}
+```
+
+---
+
+### `GET /api/brightdata/capabilities`
+
+List all Bright Data products integrated into UrbanPulse.
+
+**Response**:
+```json
+{
+  "products": [
+    {
+      "name": "Web Scraper (Datasets API)",
+      "description": "Google Maps POI and review data collection",
+      "endpoint": "/datasets/v3/trigger",
+      "status": "active",
+      "methods": ["fetch_pois_near", "fetch_reviews_near", "fetch_activity_signals"]
+    },
+    {
+      "name": "SERP API",
+      "description": "Search engine results for local business intelligence",
+      "endpoint": "/request (SERP zone)",
+      "status": "active",
+      "methods": ["search_serp"]
+    },
+    {
+      "name": "Web Unlocker",
+      "description": "Scrape any public webpage as clean markdown",
+      "endpoint": "/request (Unlocker zone)",
+      "status": "active",
+      "methods": ["scrape_url"]
+    },
+    {
+      "name": "MCP Server",
+      "description": "AI agent web data access via Model Context Protocol",
+      "endpoint": "mcp.brightdata.com/sse",
+      "status": "documented",
+      "methods": ["search_engine", "scrape_as_markdown", "web_data_google_maps_reviews"]
+    }
+  ],
+  "configured": true,
+  "mode": "live"
+}
+```
+
+---
+
 ## Agent (AI Copilot)
 
 ### `POST /api/agent/ask`
