@@ -79,6 +79,6 @@ See [business-model.md](business-model.md) for detailed pricing, unit economics,
 
 ## Live Deployment
 - **Live App**: https://urbanpulse-api-production.up.railway.app
-- **Repository**: https://github.com/Vishwa-docs/World-Wide-Vibes
+- **Repository**: https://github.com/Vishwa-docs/WorldWideVibes-UrbanPulse
 
 The app is deployed as a single unified service on Railway — the Dockerfile builds the React frontend and serves it from FastAPI alongside the API.

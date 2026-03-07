@@ -14,8 +14,8 @@
 ## 1. Clone the Repository
 
 ```bash
-git clone <repo-url> World-Wide-Vibes
-cd World-Wide-Vibes
+git clone https://github.com/Vishwa-docs/WorldWideVibes-UrbanPulse.git
+cd WorldWideVibes-UrbanPulse
 ```
 
 ---

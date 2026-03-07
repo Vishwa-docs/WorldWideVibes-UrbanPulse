@@ -74,7 +74,7 @@ The immediate addressable market is the **~3,200 US cities** already publishing 
 
 | Metric | Value |
 |--------|-------|
-| Cloud hosting cost per city | ~$150/mo (Railway/Vercel + DB) |
+| Cloud hosting cost per city | ~$150/mo (Railway + DB) |
 | Bright Data cost per city | ~$200/mo (Web Scraper + SERP) |
 | Azure OpenAI cost per city | ~$100/mo (GPT-4o at moderate volume) |
 | **Total COGS per city** | **~$450/mo** |

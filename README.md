@@ -4,7 +4,7 @@
 
 > Built for the World Wide Vibes GenAI.Works Hackathon — March 2026
 
-**Live Demo**: [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) | **Repo**: [github.com/Vishwa-docs/World-Wide-Vibes](https://github.com/Vishwa-docs/World-Wide-Vibes)
+**Live Demo**: [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) | **Repo**: [github.com/Vishwa-docs/WorldWideVibes-UrbanPulse](https://github.com/Vishwa-docs/WorldWideVibes-UrbanPulse)
 
 ---
 

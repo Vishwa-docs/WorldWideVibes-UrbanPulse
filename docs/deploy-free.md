@@ -2,7 +2,7 @@
 
 ## Live URL
 - **App**: https://urbanpulse-api-production.up.railway.app
-- **Repository**: https://github.com/Vishwa-docs/World-Wide-Vibes
+- **Repository**: https://github.com/Vishwa-docs/WorldWideVibes-UrbanPulse
 
 The app is deployed as a **single service** on Railway. The multi-stage Dockerfile builds the React frontend and serves it from FastAPI alongside the API — no separate frontend hosting required.
 
@@ -33,7 +33,7 @@ railway up --detach
 ## Deploy via Dashboard
 
 1. Go to [railway.com](https://railway.com) → New Project → Deploy from GitHub Repo
-2. Select `Vishwa-docs/World-Wide-Vibes`
+2. Select `Vishwa-docs/WorldWideVibes-UrbanPulse`
 3. Railway auto-detects the `Dockerfile` in the repo root
 4. Add environment variables (see below)
 5. Generate a public domain under Settings → Networking

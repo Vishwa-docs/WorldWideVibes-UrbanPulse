@@ -51,7 +51,7 @@ npx tsc --noEmit     # type-check only
 npm run build        # outputs to dist/
 ```
 
-Static files in `dist/` can be deployed to Vercel, Netlify, or any static host.
+Static files in `dist/` are served by FastAPI in production (unified Railway deployment).
 
 ## Environment
 
