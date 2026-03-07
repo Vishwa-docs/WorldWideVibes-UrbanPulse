@@ -44,6 +44,20 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup / shutdown lifecycle hook."""
     # Startup: ensure database tables exist.
     create_db_and_tables()
+
+    # Auto-seed if database is empty (first deploy / fresh container).
+    from sqlmodel import Session, select
+    from app.models.property import Property
+    from app.database import engine as db_engine
+
+    with Session(db_engine) as session:
+        count = session.exec(select(Property)).first()
+        if count is None:
+            import logging
+            logging.getLogger("urbanpulse").info("Empty database detected — running auto-seed…")
+            from scripts.seed_sample import main as seed_main
+            seed_main()
+
     yield
     # Shutdown: add cleanup logic here if needed.
 
