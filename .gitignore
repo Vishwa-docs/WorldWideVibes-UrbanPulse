@@ -46,3 +46,7 @@ nohup.out
 
 sample_prompts/
 .vercel
+
+# Personal notes (local only)
+docs/demo-video.md
+docs/deploy-free.md
