@@ -1,47 +1,74 @@
 {
   "city_name": "Montgomery",
   "state": "AL",
-  "center": {"lat": 32.3668, "lng": -86.3000},
+  "fips_state": "01",
+  "fips_county": "101",
+  "fips_place": "51000",
+  "center": { "lat": 32.3668, "lng": -86.3000 },
   "zoom": 12,
+  "population": 200603,
   "open_data_portal": "https://opendata.montgomeryal.gov",
-  "arcgis_base": "https://gis.montgomeryal.gov/arcgis/rest/services",
-  "datasets": {
-    "parcels": {
-      "name": "Parcels",
-      "local_file": "data/raw/parcels.csv",
-      "description": "Property parcels with zoning and ownership info"
+
+  "arcgis_endpoints": {
+    "311_requests": {
+      "name": "311 Service Requests",
+      "url": "https://mgmgis.montgomeryal.gov/arcgis/rest/services/HostedDatasets/Received_311_Service_Request/FeatureServer/0/query",
+      "description": "Resident-submitted 311 service requests"
     },
     "business_licenses": {
       "name": "Business Licenses",
-      "local_file": "data/raw/business_licenses.csv",
-      "description": "Active business licenses in Montgomery"
+      "url": "https://mgmgis.montgomeryal.gov/arcgis/rest/services/HostedDatasets/Business_License/FeatureServer/0/query",
+      "description": "Active business licenses with classification and location"
     },
-    "incidents": {
-      "name": "Police Incidents",
-      "local_file": "data/raw/incidents.csv",
-      "description": "911/police incident reports"
+    "most_visited": {
+      "name": "Most Visited Locations",
+      "url": "https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Most_Visited_Locations/FeatureServer/0/query",
+      "description": "Foot traffic data for frequently visited locations"
     },
-    "city_projects": {
-      "name": "City Projects",
-      "local_file": "data/raw/city_projects.csv",
-      "description": "Infrastructure and development projects"
+    "visitor_origin": {
+      "name": "Visitor Origin",
+      "url": "https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Visitors_Origin/FeatureServer/0/query",
+      "description": "Where visitors to Montgomery originate from"
+    },
+    "code_violations": {
+      "name": "Code Violations",
+      "url": "https://mgmgis.montgomeryal.gov/arcgis/rest/services/HostedDatasets/Code_Violations/FeatureServer/0/query",
+      "description": "Property code enforcement violation records"
+    },
+    "city_owned_properties": {
+      "name": "City-Owned Properties",
+      "url": "https://mgmgis.montgomeryal.gov/arcgis/rest/services/HostedDatasets/City_Owned_Properities/FeatureServer/0/query",
+      "description": "City-owned surplus and managed properties"
+    },
+    "construction_permits": {
+      "name": "Construction Permits",
+      "url": "https://mgmgis.montgomeryal.gov/arcgis/rest/services/HostedDatasets/Construction_Permits/FeatureServer/0/query",
+      "description": "Active building and construction permit records"
+    },
+    "opportunity_zones": {
+      "name": "Opportunity Zones",
+      "url": "https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Opportunity_Zones/FeatureServer/0/query",
+      "description": "Federal opportunity zone boundaries"
     }
   },
-  "column_mapping": {
-    "parcels": {
-      "parcel_id": "PARCEL_ID",
-      "address": "FULL_ADDRESS",
-      "latitude": "LATITUDE",
-      "longitude": "LONGITUDE",
-      "property_type": "PROPERTY_TYPE",
-      "zoning": "ZONING",
-      "is_vacant": "VACANT",
-      "lot_size_sqft": "LOT_SIZE",
-      "assessed_value": "ASSESSED_VALUE",
-      "year_built": "YEAR_BUILT",
-      "neighborhood": "NEIGHBORHOOD"
-    }
+
+  "census": {
+    "api_base": "https://api.census.gov/data/2023/acs/acs5",
+    "geography": "place:51000",
+    "state": "01",
+    "variables_count": 31,
+    "variable_groups": [
+      "population", "income", "poverty", "education",
+      "employment", "commuting", "transportation", "housing"
+    ]
   },
+
+  "weather": {
+    "provider": "open-meteo",
+    "latitude": 32.3668,
+    "longitude": -86.3000
+  },
+
   "neighborhoods": [
     "Downtown", "Capitol Heights", "Cloverdale", "Old Cloverdale",
     "Midtown", "Normandale", "Highland Park", "Garden District",

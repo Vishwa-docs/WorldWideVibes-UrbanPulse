@@ -4,6 +4,8 @@
 
 > Built for the World Wide Vibes GenAI.Works Hackathon — March 2026
 
+**Live Demo**: [urbanpulse-chi.vercel.app](https://urbanpulse-chi.vercel.app) | **API**: [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app/api/health) | **Repo**: [github.com/Vishwa-docs/World-Wide-Vibes](https://github.com/Vishwa-docs/World-Wide-Vibes)
+
 ---
 
 ## The Problem
@@ -247,7 +249,12 @@ npm run build                # TypeScript + production build check
 
 ## Deployment
 
-See [docs/deploy-free.md](docs/deploy-free.md) for free-tier deployment on Vercel (frontend) + Railway (backend).
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | Vercel | [urbanpulse-chi.vercel.app](https://urbanpulse-chi.vercel.app) |
+| Backend | Railway | [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) |
+
+See [docs/deploy-free.md](docs/deploy-free.md) for full deployment instructions.
 
 ---
 
