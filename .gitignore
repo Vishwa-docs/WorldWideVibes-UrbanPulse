@@ -47,3 +47,4 @@ nohup.out
 sample_prompts/
 demo-video.md
 deploy-free.md
+.vercel
