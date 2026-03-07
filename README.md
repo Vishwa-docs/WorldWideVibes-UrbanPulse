@@ -6,7 +6,9 @@
 
 UrbanPulse is an AI-powered site-selection web application that helps city planners and entrepreneurs find the best locations for businesses and community services in Montgomery, AL. It combines open data, web intelligence (via Bright Data), and multi-agent AI analysis to deliver actionable location insights.
 
-## 🎯 Challenge Alignment
+## 🎯 Challenge Track
+
+**Workforce, Business & Economic Growth**
 
 This project addresses the GenAI.Works hackathon challenge by:
 - **Using City of Montgomery Open Data Portal** as primary data source

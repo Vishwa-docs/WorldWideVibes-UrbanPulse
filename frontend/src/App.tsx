@@ -3,6 +3,7 @@ import Header from './components/Layout/Header';
 import Dashboard from './pages/Dashboard';
 import Compare from './pages/Compare';
 import StoryMode from './pages/StoryMode';
+import Insights from './pages/Insights';
 import { usePersona } from './hooks/usePersona';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Dashboard activePersona={activePersona} />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/story" element={<StoryMode />} />
+          <Route path="/insights" element={<Insights />} />
         </Routes>
       </div>
     </BrowserRouter>

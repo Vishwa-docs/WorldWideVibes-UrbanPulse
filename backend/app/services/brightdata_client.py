@@ -6,13 +6,15 @@ Uses Bright Data's Web Scraper API to fetch:
 - Google Maps business data (reviews, ratings)
 - Local business activity signals
 
-When BRIGHTDATA_API_TOKEN is not set, returns simulated data for demo purposes.
+Requires BRIGHTDATA_API_TOKEN to be set. No mock/simulated data.
 """
 
 import httpx
-import random
+import logging
 from typing import Optional
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class BrightDataClient:
@@ -22,9 +24,12 @@ class BrightDataClient:
         self.settings = get_settings()
         self.api_token = self.settings.brightdata_api_token
         self.base_url = self.settings.brightdata_base_url
-        self.is_configured = bool(
-            self.api_token and self.api_token != "your_brightdata_api_token_here"
-        )
+        if not self.api_token:
+            raise RuntimeError(
+                "Bright Data API token is not configured. "
+                "Set the BRIGHTDATA_API_TOKEN environment variable."
+            )
+        self.is_configured = True
 
     async def fetch_pois_near(
         self,
@@ -34,17 +39,11 @@ class BrightDataClient:
         category: str = "business",
     ) -> dict:
         """Fetch Points of Interest near a coordinate using Bright Data."""
-        if not self.is_configured:
-            return self._generate_mock_pois(lat, lng, category)
-
-        # Real Bright Data API call
-        # Uses the Web Scraper API to search Google Maps for businesses
         try:
             async with httpx.AsyncClient(timeout=30) as client:
-                # Bright Data Web Scraper endpoint for Google Maps
                 url = f"{self.base_url}/datasets/v3/trigger"
                 payload = {
-                    "dataset_id": "gd_l1vijqt9jfj7olhj",  # Google Maps dataset
+                    "dataset_id": "gd_l1vijqt9jfj7olhj",
                     "url": f"https://www.google.com/maps/search/{category}/@{lat},{lng},15z",
                     "format": "json",
                 }
@@ -53,21 +52,23 @@ class BrightDataClient:
                     "Content-Type": "application/json",
                 }
                 response = await client.post(url, json=payload, headers=headers)
-                if response.status_code == 200:
-                    return self._parse_brightdata_response(response.json(), category)
-                else:
-                    # Fall back to mock on error
-                    return self._generate_mock_pois(lat, lng, category)
-        except Exception:
-            return self._generate_mock_pois(lat, lng, category)
+                response.raise_for_status()
+                return self._parse_brightdata_response(response.json(), category)
+        except Exception as e:
+            logger.error("Bright Data POI fetch failed: %s", e)
+            return {
+                "total_count": 0,
+                "competitor_count": 0,
+                "category": category,
+                "source": "brightdata",
+                "pois": [],
+                "error": str(e),
+            }
 
     async def fetch_reviews_near(
         self, lat: float, lng: float, business_type: str = "restaurant"
     ) -> dict:
         """Fetch review data for businesses near a location."""
-        if not self.is_configured:
-            return self._generate_mock_reviews(lat, lng, business_type)
-
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 url = f"{self.base_url}/datasets/v3/trigger"
@@ -81,12 +82,17 @@ class BrightDataClient:
                     "Content-Type": "application/json",
                 }
                 response = await client.post(url, json=payload, headers=headers)
-                if response.status_code == 200:
-                    return self._parse_review_response(response.json(), business_type)
-                else:
-                    return self._generate_mock_reviews(lat, lng, business_type)
-        except Exception:
-            return self._generate_mock_reviews(lat, lng, business_type)
+                response.raise_for_status()
+                return self._parse_review_response(response.json(), business_type)
+        except Exception as e:
+            logger.error("Bright Data review fetch failed: %s", e)
+            return {
+                "avg_rating": 0,
+                "total_reviews": 0,
+                "business_type": business_type,
+                "source": "brightdata",
+                "error": str(e),
+            }
 
     async def fetch_activity_signals(
         self, lat: float, lng: float, radius_km: float = 0.5
@@ -120,46 +126,7 @@ class BrightDataClient:
             "review_count": review_count,
             "competitor_count": competitor_count,
             "activity_index": round(activity_index, 2),
-            "source": "brightdata" if self.is_configured else "simulated",
-        }
-
-    def _generate_mock_pois(self, lat: float, lng: float, category: str) -> dict:
-        """Generate realistic mock POI data for demo purposes."""
-        # Use location hash for consistent results
-        seed = int((lat * 1000 + lng * 1000) % 10000)
-        rng = random.Random(seed)
-
-        base_count = rng.randint(5, 45)
-        return {
-            "total_count": base_count,
-            "competitor_count": rng.randint(0, min(15, base_count)),
-            "category": category,
-            "source": "simulated",
-            "pois": [
-                {
-                    "name": f"Business {i+1}",
-                    "category": category,
-                    "lat": lat + rng.uniform(-0.005, 0.005),
-                    "lng": lng + rng.uniform(-0.005, 0.005),
-                    "rating": round(rng.uniform(2.5, 5.0), 1),
-                }
-                for i in range(min(10, base_count))
-            ],
-        }
-
-    def _generate_mock_reviews(
-        self, lat: float, lng: float, business_type: str
-    ) -> dict:
-        """Generate realistic mock review data for demo purposes."""
-        seed = int((lat * 1000 + lng * 1000 + 42) % 10000)
-        rng = random.Random(seed)
-
-        return {
-            "avg_rating": round(rng.uniform(3.0, 4.8), 2),
-            "total_reviews": rng.randint(20, 500),
-            "business_type": business_type,
-            "sentiment": rng.choice(["positive", "mixed", "neutral"]),
-            "source": "simulated",
+            "source": "brightdata",
         }
 
     def _parse_brightdata_response(self, data: dict, category: str) -> dict:
@@ -179,7 +146,13 @@ class BrightDataClient:
                 "source": "brightdata",
                 "pois": results[:10],
             }
-        return self._generate_mock_pois(0, 0, category)
+        return {
+            "total_count": 0,
+            "competitor_count": 0,
+            "category": category,
+            "source": "brightdata",
+            "pois": [],
+        }
 
     def _parse_review_response(self, data: dict, business_type: str) -> dict:
         """Parse actual Bright Data review response."""
@@ -191,13 +164,18 @@ class BrightDataClient:
             ]
             return {
                 "avg_rating": (
-                    round(sum(ratings) / len(ratings), 2) if ratings else 3.5
+                    round(sum(ratings) / len(ratings), 2) if ratings else 0
                 ),
                 "total_reviews": sum(reviews) if reviews else 0,
                 "business_type": business_type,
                 "source": "brightdata",
             }
-        return self._generate_mock_reviews(0, 0, business_type)
+        return {
+            "avg_rating": 0,
+            "total_reviews": 0,
+            "business_type": business_type,
+            "source": "brightdata",
+        }
 
 
 # Singleton instance

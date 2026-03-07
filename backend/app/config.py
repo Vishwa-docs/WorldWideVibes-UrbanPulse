@@ -20,13 +20,22 @@ class Settings(BaseSettings):
     # ── Database ──────────────────────────────────────────────────────────
     database_url: str = "sqlite:///./urbanpulse.db"
 
-    # ── LLM / Gemini ─────────────────────────────────────────────────────
-    gemini_api_key: str = ""
-    llm_provider: str = "gemini"
+    # ── Azure OpenAI ──────────────────────────────────────────────────────
+    azure_openai_endpoint: str = ""
+    azure_openai_api_key: str = ""
+    azure_openai_deployment: str = "gpt-4o-2"
+    azure_openai_api_version: str = "2024-12-01-preview"
+    llm_provider: str = "azure_openai"
 
     # ── BrightData ────────────────────────────────────────────────────────
     brightdata_api_token: str = ""
     brightdata_base_url: str = "https://api.brightdata.com"
+
+    # ── Google Places ─────────────────────────────────────────────────────
+    google_places_api_key: str = ""
+
+    # ── US Census ─────────────────────────────────────────────────────────
+    census_api_key: str = ""
 
     # ── Montgomery ArcGIS ─────────────────────────────────────────────────
     montgomery_arcgis_base_url: str = "https://opendata.montgomeryal.gov"

@@ -68,7 +68,7 @@ class ScorecardResponse(BaseModel):
     scores: ScoreDetail
     nearby_incidents: list[IncidentNearby] = []
     nearby_services: list[ServiceNearby] = []
-    ai_narrative: str = "AI narrative placeholder – connect Gemini for real insights."
+    ai_narrative: str = ""
 
 
 # ── Compare ───────────────────────────────────────────────────────────────────

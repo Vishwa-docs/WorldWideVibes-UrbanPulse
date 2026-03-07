@@ -1,1 +1,60 @@
 @import "tailwindcss";
+
+/* ── Fix Leaflet + Tailwind v4 conflict ─────────────────────────────────
+   Tailwind v4 preflight sets img { max-width:100%; height:auto; display:block }
+   which breaks Leaflet map tiles, markers, and controls.                       */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-tile {
+  width: 256px !important;
+  height: 256px !important;
+}
+.leaflet-control-zoom a,
+.leaflet-control-layers {
+  line-height: normal;
+}
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Smooth transitions */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid #e5e7eb !important;
+}
+.leaflet-popup-tip {
+  box-shadow: none !important;
+}
+
+/* Loading pulse animation */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

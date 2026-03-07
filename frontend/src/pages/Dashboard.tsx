@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import MapView from '../components/Map/MapView';
 import Sidebar from '../components/Layout/Sidebar';
+import LiveDataBar from '../components/Layout/LiveDataBar';
+import DemographicsPanel from '../components/Insights/DemographicsPanel';
 import { useProperties } from '../hooks/useProperties';
 import { useScenario } from '../hooks/useScenario';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { fetchScorecard } from '../services/api';
 import type { PersonaType, Property, ScorecardResponse } from '../types';
-import { MapPin, TrendingUp, Building2, AlertTriangle } from 'lucide-react';
+import { MapPin, TrendingUp, Building2, AlertTriangle, Users } from 'lucide-react';
 
 interface DashboardProps {
   activePersona: PersonaType;
@@ -28,6 +30,11 @@ export default function Dashboard({ activePersona }: DashboardProps) {
     commercial: true,
     incidents: true,
     equity_overlay: false,
+    demographics: false,
+    service_requests: false,
+    foot_traffic: false,
+    vacant_reports: false,
+    business_licenses: false,
   });
 
   const watchedIds = watchlistItems.map((w) => w.property_id);
@@ -87,6 +94,9 @@ export default function Dashboard({ activePersona }: DashboardProps) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Live Data Status Bar */}
+      <LiveDataBar />
+
       {/* KPI Bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-2.5 flex items-center gap-6">
         <div className="flex items-center gap-2">
@@ -139,6 +149,15 @@ export default function Dashboard({ activePersona }: DashboardProps) {
             </a>
           </>
         )}
+        <div className="ml-auto">
+          <a
+            href="/insights"
+            className="flex items-center gap-1.5 text-xs font-medium text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+          >
+            <Users className="w-3.5 h-3.5" />
+            City Insights
+          </a>
+        </div>
       </div>
 
       {/* Main content */}
@@ -170,6 +189,15 @@ export default function Dashboard({ activePersona }: DashboardProps) {
             layers={layers}
             incidents={scorecard?.nearby_incidents}
           />
+          {/* Demographics overlay panel */}
+          {layers.demographics && (
+            <div className="absolute top-4 left-4 z-[1000] w-80">
+              <DemographicsPanel
+                lat={selectedProperty?.latitude}
+                lng={selectedProperty?.longitude}
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

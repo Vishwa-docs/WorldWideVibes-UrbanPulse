@@ -10,6 +10,18 @@ import type {
   ScenarioType,
   AgentResponse,
   StoryResponse,
+  WalkScoreResponse,
+  DemographicsResponse,
+  SiteReportResponse,
+  MarketGapResponse,
+  InvestmentAnalysisResponse,
+  ServiceRequest311,
+  MostVisitedLocation,
+  VisitorOrigin,
+  BusinessLicense,
+  VacantPropertyReport,
+  WorkforceData,
+  DataSourcesSummary,
 } from '../types';
 
 const api = axios.create({
@@ -76,5 +88,63 @@ export const askAgent = (query: string, persona: PersonaType, scenario: Scenario
 
 export const fetchStory = (scenario: ScenarioType, persona: PersonaType) =>
   api.post<StoryResponse>('/api/agent/story', { scenario, persona }).then(r => r.data);
+
+// ── Walk Score ──────────────────────────────────────────────────────────
+export const fetchWalkScore = (propertyId: number) =>
+  api.get<WalkScoreResponse>(`/api/walkscore/${propertyId}`).then(r => r.data);
+
+export const fetchWalkScoreByCoords = (lat: number, lng: number) =>
+  api.get<WalkScoreResponse>('/api/walkscore/coordinates/', { params: { lat, lng } }).then(r => r.data);
+
+// ── Demographics ────────────────────────────────────────────────────────
+export const fetchTractDemographics = (lat: number, lng: number) =>
+  api.get<DemographicsResponse>('/api/demographics/tract', { params: { lat, lng } }).then(r => r.data);
+
+export const fetchCityDemographics = () =>
+  api.get<DemographicsResponse>('/api/demographics/city').then(r => r.data);
+
+// ── Insights ────────────────────────────────────────────────────────────
+export const fetchSiteReport = (propertyId: number) =>
+  api.get<SiteReportResponse>(`/api/insights/site-report/${propertyId}`).then(r => r.data);
+
+export const fetchMarketGaps = (scenario?: ScenarioType) =>
+  api.get<MarketGapResponse>('/api/insights/market-gaps', { params: { scenario } }).then(r => r.data);
+
+export const fetchInvestmentAnalysis = (propertyId: number) =>
+  api.get<InvestmentAnalysisResponse>(`/api/insights/investment-analysis/${propertyId}`).then(r => r.data);
+
+// ── Montgomery Open Data ────────────────────────────────────────────────
+export const fetch311Requests = (limit = 200, category?: string) =>
+  api.get<{ items: ServiceRequest311[]; total: number }>('/api/montgomery/311', {
+    params: { limit, ...(category ? { category } : {}) },
+  }).then(r => r.data);
+
+export const fetchMostVisited = (limit = 200) =>
+  api.get<{ items: MostVisitedLocation[]; total: number }>('/api/montgomery/most-visited', {
+    params: { limit },
+  }).then(r => r.data);
+
+export const fetchVisitorOrigin = (limit = 200) =>
+  api.get<{ items: VisitorOrigin[]; total: number }>('/api/montgomery/visitor-origin', {
+    params: { limit },
+  }).then(r => r.data);
+
+export const fetchBusinessLicenses = (limit = 200, businessType?: string) =>
+  api.get<{ items: BusinessLicense[]; total: number }>('/api/montgomery/business-licenses', {
+    params: { limit, ...(businessType ? { business_type: businessType } : {}) },
+  }).then(r => r.data);
+
+export const fetchVacantPropertyReports = (limit = 200) =>
+  api.get<{ items: VacantPropertyReport[]; total: number }>('/api/montgomery/vacant-properties', {
+    params: { limit },
+  }).then(r => r.data);
+
+// ── Workforce ───────────────────────────────────────────────────────────
+export const fetchWorkforceData = () =>
+  api.get<WorkforceData>('/api/montgomery/workforce').then(r => r.data);
+
+// ── Data Sources ────────────────────────────────────────────────────────
+export const fetchDataSources = () =>
+  api.get<DataSourcesSummary>('/api/montgomery/data-sources').then(r => r.data);
 
 export default api;

@@ -1,4 +1,7 @@
-import { TrendingUp, Star, GitCompareArrows, Shield, Footprints, BarChart3, Heart, Activity, Loader2 } from 'lucide-react';
+import { TrendingUp, Star, GitCompareArrows, Shield, Footprints, BarChart3, Heart, Activity, Loader2, Zap } from 'lucide-react';
+import WalkScoreGauge from '../Insights/WalkScoreGauge';
+import SiteReportButton from '../Insights/SiteReportButton';
+import InvestmentAnalysisButton from '../Insights/InvestmentAnalysisButton';
 import type { Property, ScorecardResponse, PersonaType } from '../../types';
 
 interface PropertyScorecardProps {
@@ -134,6 +137,25 @@ export default function PropertyScorecard({
           <p className="text-xs text-indigo-800 leading-relaxed">{scorecard.ai_narrative}</p>
         </div>
       )}
+
+      {/* Walk Score */}
+      <div className="mb-3">
+        <WalkScoreGauge propertyId={property.id} />
+      </div>
+
+      {/* AI Insights */}
+      <div className="space-y-2 mb-3">
+        <SiteReportButton propertyId={property.id} propertyAddress={property.address} />
+        <InvestmentAnalysisButton propertyId={property.id} propertyAddress={property.address} />
+      </div>
+
+      {/* Bright Data attribution */}
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 mb-3 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg">
+        <Zap className="w-3 h-3 text-orange-500 flex-shrink-0" />
+        <p className="text-[10px] text-orange-700">
+          Activity scores powered by <span className="font-semibold">Bright Data</span> web signals
+        </p>
+      </div>
 
       {/* Actions */}
       <div className="flex gap-2">

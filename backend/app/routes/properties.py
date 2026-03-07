@@ -1,5 +1,7 @@
 """Property listing and detail routes."""
 
+import json
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -26,6 +28,8 @@ from app.services.scoring import (
     get_nearby_services,
     haversine_km,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/properties", tags=["properties"])
 
@@ -125,7 +129,7 @@ def get_property(
 
 
 @router.get("/{property_id}/scorecard", response_model=ScorecardResponse)
-def get_scorecard(
+async def get_scorecard(
     property_id: int,
     scenario: str = Query("general"),
     persona: str = Query("city_console"),
@@ -186,4 +190,40 @@ def get_scorecard(
         scores=score_detail,
         nearby_incidents=incident_items,
         nearby_services=service_items,
+        ai_narrative=await _generate_scorecard_narrative(prop, score_detail, incidents, services, scenario, persona),
     )
+
+
+async def _generate_scorecard_narrative(
+    prop: Property,
+    scores: ScoreDetail,
+    incidents: list,
+    services: list,
+    scenario: str,
+    persona: str,
+) -> str:
+    """Generate a real AI narrative for the scorecard using Azure OpenAI."""
+    try:
+        from app.services.llm_service import get_llm_service
+        llm = get_llm_service()
+
+        service_types = {}
+        for s in services:
+            st = s.service_type
+            service_types[st] = service_types.get(st, 0) + 1
+
+        prompt = f"""Write a concise (100-150 word) scorecard narrative for this Montgomery, AL property:
+
+Address: {prop.address}
+Neighborhood: {prop.neighborhood}
+Type: {prop.property_type}, Vacant: {prop.is_vacant}
+Scores: Overall={scores.overall_score}, Traffic={scores.foot_traffic_score}, Competition={scores.competition_score}, Safety={scores.safety_score}, Equity={scores.equity_score}
+Nearby: {len(incidents)} incidents, {len(services)} services {json.dumps(service_types)}
+Scenario: {scenario}, Persona: {persona}
+
+Summarize strengths, risks, and one key recommendation."""
+
+        return await llm.generate(prompt, "You are a concise real estate analyst for Montgomery, AL.", temperature=0.6, max_tokens=300)
+    except Exception as e:
+        logger.warning("AI narrative generation failed: %s", e)
+        return f"Property at {prop.address} in {prop.neighborhood} — Overall score: {scores.overall_score}/10."

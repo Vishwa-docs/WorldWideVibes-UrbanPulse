@@ -20,6 +20,10 @@ from app.routes.watchlist import router as watchlist_router
 from app.routes.export import router as export_router
 from app.routes.brightdata import router as brightdata_router
 from app.routes.agent import router as agent_router
+from app.routes.demographics import router as demographics_router
+from app.routes.walkscore import router as walkscore_router
+from app.routes.insights import router as insights_router
+from app.routes.montgomery import router as montgomery_router
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
@@ -62,3 +66,7 @@ app.include_router(watchlist_router)
 app.include_router(export_router)
 app.include_router(brightdata_router)
 app.include_router(agent_router)
+app.include_router(demographics_router)
+app.include_router(walkscore_router)
+app.include_router(insights_router)
+app.include_router(montgomery_router)
