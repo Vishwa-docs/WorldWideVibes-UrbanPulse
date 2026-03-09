@@ -15,6 +15,9 @@ Modes:
 import hashlib
 import logging
 import re
+import time
+import threading
+from collections import deque
 from datetime import datetime, timezone
 from random import Random
 from typing import Optional
@@ -27,6 +30,49 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 
+class _RateLimiter:
+    """Thread-safe sliding-window rate limiter for BD API calls."""
+
+    def __init__(self, max_per_hour: int, max_per_day: int):
+        self.max_per_hour = max_per_hour
+        self.max_per_day = max_per_day
+        self._timestamps: deque[float] = deque()
+        self._lock = threading.Lock()
+
+    def allow(self) -> bool:
+        """Return True if a call is allowed, False if rate-limited."""
+        now = time.time()
+        with self._lock:
+            # Purge entries older than 24 h
+            while self._timestamps and self._timestamps[0] < now - 86400:
+                self._timestamps.popleft()
+            # Check daily limit
+            if len(self._timestamps) >= self.max_per_day:
+                return False
+            # Check hourly limit
+            hour_ago = now - 3600
+            hourly = sum(1 for t in self._timestamps if t >= hour_ago)
+            if hourly >= self.max_per_hour:
+                return False
+            self._timestamps.append(now)
+            return True
+
+    @property
+    def stats(self) -> dict:
+        now = time.time()
+        with self._lock:
+            while self._timestamps and self._timestamps[0] < now - 86400:
+                self._timestamps.popleft()
+            hour_ago = now - 3600
+            hourly = sum(1 for t in self._timestamps if t >= hour_ago)
+            return {
+                "calls_last_hour": hourly,
+                "calls_last_24h": len(self._timestamps),
+                "max_per_hour": self.max_per_hour,
+                "max_per_day": self.max_per_day,
+            }
+
+
 class BrightDataClient:
     """Client for Bright Data Web Scraper, SERP API, and Web Unlocker."""
 
@@ -36,16 +82,40 @@ class BrightDataClient:
         self.base_url = self.settings.brightdata_base_url
         self.serp_zone = self.settings.brightdata_serp_zone
         self.unlocker_zone = self.settings.brightdata_unlocker_zone
-        self.is_configured = bool(self.api_token)
+        # Kill-switch: set BRIGHTDATA_ENABLED=false to force simulated mode
+        enabled = self.settings.brightdata_enabled
+        self.is_configured = bool(self.api_token) and enabled
+        self._rate_limiter = _RateLimiter(
+            max_per_hour=self.settings.brightdata_max_calls_per_hour,
+            max_per_day=self.settings.brightdata_max_calls_per_day,
+        )
         if strict and not self.api_token:
             raise RuntimeError(
                 "Bright Data API token is not configured. "
                 "Set the BRIGHTDATA_API_TOKEN environment variable."
             )
-        if not self.is_configured:
+        if not enabled:
+            logger.warning(
+                "Bright Data is DISABLED via BRIGHTDATA_ENABLED=false. "
+                "All calls will use simulated data."
+            )
+        elif not self.is_configured:
             logger.warning(
                 "Bright Data token is missing. Falling back to simulated web signals."
             )
+
+    def _check_rate_limit(self, product: str) -> bool:
+        """Check rate limit; log warning if exceeded. Returns True if allowed."""
+        if self._rate_limiter.allow():
+            return True
+        stats = self._rate_limiter.stats
+        logger.warning(
+            "Bright Data %s RATE LIMITED — hour: %d/%d, day: %d/%d. "
+            "Falling back to simulated data.",
+            product, stats['calls_last_hour'], stats['max_per_hour'],
+            stats['calls_last_24h'], stats['max_per_day'],
+        )
+        return False
 
     async def fetch_pois_near(
         self,
@@ -56,6 +126,8 @@ class BrightDataClient:
     ) -> dict:
         """Fetch Points of Interest near a coordinate using Bright Data."""
         if not self.is_configured:
+            return self._simulate_poi_response(lat, lng, category)
+        if not self._check_rate_limit("Web Scraper (POI)"):
             return self._simulate_poi_response(lat, lng, category)
 
         try:
@@ -88,6 +160,8 @@ class BrightDataClient:
     ) -> dict:
         """Fetch review data for businesses near a location."""
         if not self.is_configured:
+            return self._simulate_review_response(lat, lng, business_type)
+        if not self._check_rate_limit("Web Scraper (Reviews)"):
             return self._simulate_review_response(lat, lng, business_type)
 
         try:
@@ -225,6 +299,8 @@ class BrightDataClient:
         """
         if not self.is_configured:
             return self._simulate_serp_response(query, engine, location, num_results)
+        if not self._check_rate_limit("SERP API"):
+            return self._simulate_serp_response(query, engine, location, num_results)
 
         try:
             encoded_q = quote_plus(query)
@@ -341,6 +417,8 @@ class BrightDataClient:
         Handles anti-bot protection, CAPTCHAs, and dynamic rendering automatically.
         """
         if not self.is_configured:
+            return self._simulate_scrape_response(url)
+        if not self._check_rate_limit("Web Unlocker"):
             return self._simulate_scrape_response(url)
 
         try:

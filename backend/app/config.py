@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     brightdata_base_url: str = "https://api.brightdata.com"
     brightdata_serp_zone: str = "serp_api1"
     brightdata_unlocker_zone: str = "web_unlocker1"
+    brightdata_enabled: bool = True          # kill-switch: set False to force simulated mode
+    brightdata_max_calls_per_hour: int = 30  # rate limit per hour
+    brightdata_max_calls_per_day: int = 200  # rate limit per day
 
     # ── Google Places ─────────────────────────────────────────────────────
     google_places_api_key: str = ""

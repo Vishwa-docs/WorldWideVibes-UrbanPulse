@@ -59,7 +59,14 @@ def _make_mock_client():
     mock_client.api_token = "test-token"
     mock_client.base_url = "https://api.brightdata.com"
     mock_client.serp_zone = "serp_api1"
-    mock_client.unlocker_zone = "unlocker1"
+    mock_client.unlocker_zone = "web_unlocker1"
+    mock_client._rate_limiter = MagicMock()
+    mock_client._rate_limiter.stats = {
+        "calls_last_hour": 0,
+        "calls_last_24h": 0,
+        "max_per_hour": 30,
+        "max_per_day": 200,
+    }
 
     mock_client.fetch_pois_near = AsyncMock(
         return_value={

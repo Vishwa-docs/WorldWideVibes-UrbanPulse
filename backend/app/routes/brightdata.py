@@ -132,8 +132,9 @@ async def seed_all_signals(session: Session = Depends(get_session)):
 
 @router.get("/status")
 async def brightdata_status():
-    """Check Bright Data configuration status and capabilities."""
+    """Check Bright Data configuration status, rate limits, and capabilities."""
     client = get_brightdata_client()
+    rate = client._rate_limiter.stats
     return {
         "configured": client.is_configured,
         "base_url": client.base_url,
@@ -142,6 +143,7 @@ async def brightdata_status():
         "mode": "live" if client.is_configured else "simulated",
         "api_token_set": bool(client.api_token),
         "api_token_prefix": client.api_token[:8] + "..." if client.api_token else None,
+        "rate_limit": rate,
     }
 
 
