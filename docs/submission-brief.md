@@ -52,6 +52,7 @@ All 8 endpoints return **100% live data** — zero mock or simulated fallbacks.
 - **Signal delta engine** — Tracks 48-hour activity changes using Bright Data refresh.
 - **AI Agent Chat** — Collapsible natural-language copilot in Site Selection Workspace.
 - **7 recharts visualizations** — business license distribution, foot traffic, 311 requests, score distribution, workforce breakdown, property types, and radar chart (licenses vs foot traffic).
+- **Guided onboarding walkthrough** — 5-step welcome modal for first-time visitors (judges) explaining each major feature with navigation links. Re-triggerable via "Tour" button in the header.
 
 ## Judging Alignment
 

@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Activity, Home, Map, GitCompareArrows, BookOpen, Sparkles, DollarSign } from 'lucide-react';
+import { Activity, Home, Map, GitCompareArrows, BookOpen, Sparkles, DollarSign, HelpCircle } from 'lucide-react';
 import BrightDataBadge from './BrightDataBadge';
+import { resetOnboarding } from '../Onboarding/WelcomeModal';
 
 const navItems = [
   { to: '/', label: 'Copilot', icon: Home },
@@ -46,6 +47,17 @@ export default function Header() {
         </nav>
       </div>
       <div className="flex items-center gap-3">
+        <button
+          onClick={() => {
+            resetOnboarding();
+            window.location.reload();
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-200 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors"
+          title="Show guided tour"
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+          Tour
+        </button>
         <BrightDataBadge />
         <span className="text-xs text-indigo-300 font-medium px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
           Montgomery, AL

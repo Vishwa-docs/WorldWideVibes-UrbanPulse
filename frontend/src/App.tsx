@@ -6,6 +6,7 @@ import StoryMode from './pages/StoryMode';
 import Insights from './pages/Insights';
 import Copilot from './pages/Copilot';
 import BusinessModel from './pages/BusinessModel';
+import WelcomeModal from './components/Onboarding/WelcomeModal';
 import { AppStateProvider, useAppState } from './context/AppStateContext';
 
 function AppContent() {
@@ -14,6 +15,7 @@ function AppContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-100">
       <Header />
+      <WelcomeModal />
       <Routes>
         <Route path="/" element={<Copilot activePersona={activePersona} />} />
         <Route path="/site" element={<Dashboard activePersona={activePersona} />} />

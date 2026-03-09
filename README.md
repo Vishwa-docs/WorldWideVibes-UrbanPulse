@@ -98,6 +98,11 @@ Every data source is **live and real** — all 8 ArcGIS endpoints return actual 
 - **Provenance metadata** — every data point carries source type, freshness timestamp, and confidence score
 - **Graceful degradation** — if an ArcGIS endpoint is unreachable, the app logs a warning and returns an empty set (no fake data injected)
 
+### Guided Onboarding
+- **5-step welcome walkthrough** for first-time visitors (judges) — explains each major feature with data source badges, role lens overview, and navigation links
+- **Re-triggerable** via the "Tour" button in the header
+- Stored in localStorage — shows once automatically, then on demand
+
 ---
 
 ## Tech Stack
@@ -172,6 +177,65 @@ Open http://localhost:5173 (or the port Vite assigns).
 | `CORS_ORIGINS` | No | Comma-separated allowed origins |
 
 > **All keys are optional** — the app runs in fallback mode without them. Azure OpenAI falls back to template-based responses. Bright Data uses simulated signals. ArcGIS, Census, and Weather endpoints are free and require no keys.
+
+### API Key Setup Guide
+
+If you want to run UrbanPulse with full AI and web intelligence capabilities, here's how to obtain each key:
+
+<details>
+<summary><strong>Azure OpenAI (GPT-4o-2)</strong> — powers AI recommendations & Agent Chat</summary>
+
+1. Create an [Azure account](https://portal.azure.com) (free tier available)
+2. Navigate to **Azure OpenAI Service** → Create a resource
+3. Deploy a model (we use `gpt-4o-2`)
+4. Copy the **Endpoint URL**, **API Key**, **Deployment Name**, and **API Version**
+5. Set in `.env`:
+   ```
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_OPENAI_API_KEY=your-key
+   AZURE_OPENAI_DEPLOYMENT=gpt-4o-2
+   AZURE_OPENAI_API_VERSION=2024-12-01-preview
+   LLM_PROVIDER=azure
+   ```
+</details>
+
+<details>
+<summary><strong>Bright Data</strong> — web scraping, SERP, and web intelligence</summary>
+
+1. Sign up at [brightdata.com](https://brightdata.com) (free trial available)
+2. Create a **Web Scraper API** zone, a **SERP API** zone, and a **Web Unlocker** zone
+3. Copy your **API Token** from the dashboard
+4. Set in `.env`:
+   ```
+   BRIGHTDATA_API_TOKEN=your-token
+   BRIGHTDATA_SERP_ZONE=your-serp-zone
+   BRIGHTDATA_UNLOCKER_ZONE=your-unlocker-zone
+   ```
+</details>
+
+<details>
+<summary><strong>Google Places API</strong> — walk score and nearby amenities</summary>
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Enable the **Places API**
+3. Create an API key under **Credentials**
+4. Set in `.env`:
+   ```
+   GOOGLE_PLACES_API_KEY=your-key
+   ```
+</details>
+
+<details>
+<summary><strong>US Census API</strong> — 31 demographic variables</summary>
+
+1. Request a free key at [api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html)
+2. Set in `.env`:
+   ```
+   CENSUS_API_KEY=your-key
+   ```
+</details>
+
+> **Note for judges**: The live deployment at [urbanpulse-api-production.up.railway.app](https://urbanpulse-api-production.up.railway.app) already has all API keys configured. You do not need any keys to evaluate the live demo — just open the URL. Keys are only needed if you want to run the project locally with full capabilities.
 
 ---
 
