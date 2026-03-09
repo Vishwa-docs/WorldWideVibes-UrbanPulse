@@ -60,21 +60,24 @@ class BrightDataClient:
 
         try:
             async with httpx.AsyncClient(timeout=30) as client:
-                url = f"{self.base_url}/datasets/v3/trigger"
-                payload = {
-                    "dataset_id": "gd_l1vijqt9jfj7olhj",
-                    "url": f"https://www.google.com/maps/search/{category}/@{lat},{lng},15z",
-                    "format": "json",
-                }
+                # Bright Data Web Scraper sync endpoint — dataset_id & format as query params,
+                # body is an array of input objects per docs.
+                url = (
+                    f"{self.base_url}/datasets/v3/scrape"
+                    f"?dataset_id=gd_l1vijqt9jfj7olhj&format=json"
+                )
+                search_url = f"https://www.google.com/maps/search/{category}/@{lat},{lng},15z"
+                payload = [{"url": search_url}]
                 headers = {
                     "Authorization": f"Bearer {self.api_token}",
                     "Content-Type": "application/json",
                 }
+                logger.info("Bright Data POI request: %s", search_url)
                 response = await client.post(url, json=payload, headers=headers)
                 response.raise_for_status()
                 return self._parse_brightdata_response(response.json(), category)
         except Exception as e:
-            logger.error("Bright Data POI fetch failed: %s", e)
+            logger.error("Bright Data POI fetch failed: %s (response: %s)", e, getattr(e, 'response', {}))
             simulated = self._simulate_poi_response(lat, lng, category)
             simulated["error"] = str(e)
             simulated["source"] = "brightdata_simulated_after_error"
@@ -89,21 +92,22 @@ class BrightDataClient:
 
         try:
             async with httpx.AsyncClient(timeout=30) as client:
-                url = f"{self.base_url}/datasets/v3/trigger"
-                payload = {
-                    "dataset_id": "gd_l1vijqt9jfj7olhj",
-                    "url": f"https://www.google.com/maps/search/{business_type}/@{lat},{lng},15z",
-                    "format": "json",
-                }
+                url = (
+                    f"{self.base_url}/datasets/v3/scrape"
+                    f"?dataset_id=gd_l1vijqt9jfj7olhj&format=json"
+                )
+                search_url = f"https://www.google.com/maps/search/{business_type}/@{lat},{lng},15z"
+                payload = [{"url": search_url}]
                 headers = {
                     "Authorization": f"Bearer {self.api_token}",
                     "Content-Type": "application/json",
                 }
+                logger.info("Bright Data review request: %s", search_url)
                 response = await client.post(url, json=payload, headers=headers)
                 response.raise_for_status()
                 return self._parse_review_response(response.json(), business_type)
         except Exception as e:
-            logger.error("Bright Data review fetch failed: %s", e)
+            logger.error("Bright Data review fetch failed: %s (response: %s)", e, getattr(e, 'response', {}))
             simulated = self._simulate_review_response(lat, lng, business_type)
             simulated["error"] = str(e)
             simulated["source"] = "brightdata_simulated_after_error"
@@ -147,17 +151,22 @@ class BrightDataClient:
             "fetched_at": datetime.now(timezone.utc).isoformat(),
         }
 
-    def _parse_brightdata_response(self, data: dict, category: str) -> dict:
-        """Parse actual Bright Data API response into our format."""
-        results = data.get("results", data.get("data", []))
-        if isinstance(results, list):
+    def _parse_brightdata_response(self, data, category: str) -> dict:
+        """Parse actual Bright Data Web Scraper API response into our format.
+
+        The sync /scrape endpoint returns a JSON array of result objects directly.
+        """
+        # Sync /scrape returns a list directly
+        results = data if isinstance(data, list) else data.get("results", data.get("data", []))
+        if isinstance(results, list) and results:
             return {
                 "total_count": len(results),
                 "competitor_count": len(
                     [
                         r
                         for r in results
-                        if r.get("category", "").lower() == category.lower()
+                        if category.lower() in (r.get("category", "") or "").lower()
+                        or category.lower() in (r.get("title", "") or "").lower()
                     ]
                 ),
                 "category": category,
@@ -172,13 +181,16 @@ class BrightDataClient:
             "pois": [],
         }
 
-    def _parse_review_response(self, data: dict, business_type: str) -> dict:
-        """Parse actual Bright Data review response."""
-        results = data.get("results", data.get("data", []))
+    def _parse_review_response(self, data, business_type: str) -> dict:
+        """Parse actual Bright Data review response.
+
+        The sync /scrape endpoint returns a JSON array directly.
+        """
+        results = data if isinstance(data, list) else data.get("results", data.get("data", []))
         if isinstance(results, list) and results:
             ratings = [r.get("rating", 0) for r in results if r.get("rating")]
             reviews = [
-                r.get("review_count", 0) for r in results if r.get("review_count")
+                r.get("review_count", r.get("reviews", 0)) for r in results if r.get("review_count") or r.get("reviews")
             ]
             return {
                 "avg_rating": (
@@ -216,9 +228,10 @@ class BrightDataClient:
 
         try:
             encoded_q = quote_plus(query)
-            search_url = f"https://www.google.com/search?q={encoded_q}&hl=en&gl=us&num={num_results}"
+            # brd_json=1 tells Bright Data SERP proxy to return parsed JSON
+            search_url = f"https://www.google.com/search?q={encoded_q}&hl=en&gl=us&brd_json=1"
             if engine == "bing":
-                search_url = f"https://www.bing.com/search?q={encoded_q}"
+                search_url = f"https://www.bing.com/search?q={encoded_q}&brd_json=1"
 
             async with httpx.AsyncClient(timeout=45) as client:
                 payload = {
@@ -230,6 +243,7 @@ class BrightDataClient:
                     "Authorization": f"Bearer {self.api_token}",
                     "Content-Type": "application/json",
                 }
+                logger.info("Bright Data SERP request: zone=%s url=%s", self.serp_zone, search_url)
                 response = await client.post(
                     f"{self.base_url}/request",
                     json=payload,
@@ -239,7 +253,7 @@ class BrightDataClient:
                 raw = response.json() if response.headers.get("content-type", "").startswith("application/json") else {"raw_html": response.text[:5000]}
                 return self._parse_serp_response(raw, query, engine, location)
         except Exception as e:
-            logger.error("Bright Data SERP search failed: %s", e)
+            logger.error("Bright Data SERP search failed: %s (zone=%s)", e, self.serp_zone)
             simulated = self._simulate_serp_response(query, engine, location, num_results)
             simulated["error"] = str(e)
             simulated["source"] = "brightdata_serp_simulated_after_error"
@@ -335,12 +349,12 @@ class BrightDataClient:
                     "zone": self.unlocker_zone,
                     "url": url,
                     "format": "raw",
-                    "data_format": "markdown",
                 }
                 headers = {
                     "Authorization": f"Bearer {self.api_token}",
                     "Content-Type": "application/json",
                 }
+                logger.info("Bright Data Unlocker request: zone=%s url=%s", self.unlocker_zone, url)
                 response = await client.post(
                     f"{self.base_url}/request",
                     json=payload,
@@ -360,7 +374,7 @@ class BrightDataClient:
                     "fetched_at": datetime.now(timezone.utc).isoformat(),
                 }
         except Exception as e:
-            logger.error("Bright Data scrape failed for %s: %s", url, e)
+            logger.error("Bright Data scrape failed for %s: %s (zone=%s)", url, e, self.unlocker_zone)
             simulated = self._simulate_scrape_response(url)
             simulated["error"] = str(e)
             simulated["source"] = "brightdata_unlocker_simulated_after_error"

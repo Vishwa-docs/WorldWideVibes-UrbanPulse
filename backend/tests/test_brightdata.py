@@ -58,6 +58,8 @@ def _make_mock_client():
     mock_client.is_configured = True
     mock_client.api_token = "test-token"
     mock_client.base_url = "https://api.brightdata.com"
+    mock_client.serp_zone = "serp_api1"
+    mock_client.unlocker_zone = "unlocker1"
 
     mock_client.fetch_pois_near = AsyncMock(
         return_value={

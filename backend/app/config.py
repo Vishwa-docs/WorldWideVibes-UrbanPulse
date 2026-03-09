@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     brightdata_api_token: str = ""
     brightdata_base_url: str = "https://api.brightdata.com"
     brightdata_serp_zone: str = "serp_api1"
-    brightdata_unlocker_zone: str = "unlocker1"
+    brightdata_unlocker_zone: str = "web_unlocker1"
 
     # ── Google Places ─────────────────────────────────────────────────────
     google_places_api_key: str = ""

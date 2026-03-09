@@ -137,7 +137,11 @@ async def brightdata_status():
     return {
         "configured": client.is_configured,
         "base_url": client.base_url,
+        "serp_zone": client.serp_zone,
+        "unlocker_zone": client.unlocker_zone,
         "mode": "live" if client.is_configured else "simulated",
+        "api_token_set": bool(client.api_token),
+        "api_token_prefix": client.api_token[:8] + "..." if client.api_token else None,
     }
 
 
