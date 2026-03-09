@@ -78,52 +78,75 @@ export default function MapView({
   const [buildingPermits, setBuildingPermits] = useState<BuildingPermit[]>([]);
   const [layerError, setLayerError] = useState<string | null>(null);
 
+  // Helper: validate coordinate before rendering on map
+  const validCoord = <T extends { latitude: number; longitude: number }>(item: T): boolean =>
+    item != null &&
+    typeof item.latitude === 'number' && typeof item.longitude === 'number' &&
+    isFinite(item.latitude) && isFinite(item.longitude) &&
+    item.latitude !== 0 && item.longitude !== 0;
+
   // Fetch data layers on demand when toggled on
   useEffect(() => {
     if (layers?.service_requests && requests311.length === 0) {
-      fetch311Requests(300).then(d => setRequests311(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetch311Requests(300)
+        .then(d => setRequests311(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.service_requests, requests311.length]);
 
   useEffect(() => {
     if (layers?.foot_traffic && mostVisited.length === 0) {
-      fetchMostVisited(300).then(d => setMostVisited(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchMostVisited(300)
+        .then(d => setMostVisited(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.foot_traffic, mostVisited.length]);
 
   useEffect(() => {
     if (layers?.vacant_reports && vacantReports.length === 0) {
-      fetchVacantPropertyReports(300).then(d => setVacantReports(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchVacantPropertyReports(300)
+        .then(d => setVacantReports(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.vacant_reports, vacantReports.length]);
 
   useEffect(() => {
     if (layers?.business_licenses && businesses.length === 0) {
-      fetchBusinessLicenses(300).then(d => setBusinesses(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchBusinessLicenses(300)
+        .then(d => setBusinesses(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.business_licenses, businesses.length]);
 
   useEffect(() => {
     if (layers?.code_violations && codeViolations.length === 0) {
-      fetchCodeViolations(300).then(d => setCodeViolations(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchCodeViolations(300)
+        .then(d => setCodeViolations(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.code_violations, codeViolations.length]);
 
   useEffect(() => {
     if (layers?.opportunity_zones && opportunityZones.length === 0) {
-      fetchOpportunityZones(100).then(d => setOpportunityZones(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchOpportunityZones(100)
+        .then(d => setOpportunityZones(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.opportunity_zones, opportunityZones.length]);
 
   useEffect(() => {
     if (layers?.city_owned_properties && cityOwnedParcels.length === 0) {
-      fetchCityOwnedProperties(300).then(d => setCityOwnedParcels(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchCityOwnedProperties(300)
+        .then(d => setCityOwnedParcels(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.city_owned_properties, cityOwnedParcels.length]);
 
   useEffect(() => {
     if (layers?.building_permits && buildingPermits.length === 0) {
-      fetchBuildingPermits(300).then(d => setBuildingPermits(d.items)).catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
+      fetchBuildingPermits(300)
+        .then(d => setBuildingPermits(Array.isArray(d?.items) ? d.items : []))
+        .catch(() => setLayerError('Some live Montgomery layers are unavailable; fallback data will be used when possible.'));
     }
   }, [layers?.building_permits, buildingPermits.length]);
 
@@ -225,9 +248,9 @@ export default function MapView({
 
         {/* 311 Service Requests layer */}
         {layers?.service_requests &&
-          requests311.map((req) => (
+          requests311.filter(validCoord).map((req, idx) => (
             <CircleMarker
-              key={`311-${req.id}`}
+              key={`311-${req.id ?? idx}`}
               center={[req.latitude, req.longitude]}
               radius={5}
               pathOptions={{
@@ -251,9 +274,9 @@ export default function MapView({
 
         {/* Most Visited / Foot Traffic layer */}
         {layers?.foot_traffic &&
-          mostVisited.map((loc) => (
+          mostVisited.filter(validCoord).map((loc, idx) => (
             <CircleMarker
-              key={`visited-${loc.id}`}
+              key={`visited-${loc.id ?? idx}`}
               center={[loc.latitude, loc.longitude]}
               radius={Math.max(6, Math.min(16, Math.sqrt(loc.visits || 1) * 0.5))}
               pathOptions={{
@@ -279,9 +302,9 @@ export default function MapView({
 
         {/* Vacant Property Reports layer */}
         {layers?.vacant_reports &&
-          vacantReports.map((vr) => (
+          vacantReports.filter(validCoord).map((vr, idx) => (
             <CircleMarker
-              key={`vacant-rpt-${vr.id}`}
+              key={`vacant-rpt-${vr.id ?? idx}`}
               center={[vr.latitude, vr.longitude]}
               radius={6}
               pathOptions={{
@@ -305,9 +328,9 @@ export default function MapView({
 
         {/* Business Licenses layer */}
         {layers?.business_licenses &&
-          businesses.map((biz) => (
+          businesses.filter(validCoord).map((biz, idx) => (
             <CircleMarker
-              key={`biz-${biz.id}`}
+              key={`biz-${biz.id ?? idx}`}
               center={[biz.latitude, biz.longitude]}
               radius={5}
               pathOptions={{
@@ -330,9 +353,9 @@ export default function MapView({
 
         {/* Code Violations layer */}
         {layers?.code_violations &&
-          codeViolations.map((cv) => (
+          codeViolations.filter(validCoord).map((cv, idx) => (
             <CircleMarker
-              key={`cv-${cv.id}`}
+              key={`cv-${cv.id ?? idx}`}
               center={[cv.latitude, cv.longitude]}
               radius={5}
               pathOptions={{
@@ -356,9 +379,9 @@ export default function MapView({
 
         {/* Opportunity Zones layer */}
         {layers?.opportunity_zones &&
-          opportunityZones.map((oz) => (
+          opportunityZones.filter(validCoord).map((oz, idx) => (
             <CircleMarker
-              key={`oz-${oz.id}`}
+              key={`oz-${oz.id ?? idx}`}
               center={[oz.latitude, oz.longitude]}
               radius={10}
               pathOptions={{
@@ -382,9 +405,9 @@ export default function MapView({
 
         {/* City-Owned Properties layer */}
         {layers?.city_owned_properties &&
-          cityOwnedParcels.map((cp) => (
+          cityOwnedParcels.filter(validCoord).map((cp, idx) => (
             <CircleMarker
-              key={`cp-${cp.id}`}
+              key={`cp-${cp.id ?? idx}`}
               center={[cp.latitude, cp.longitude]}
               radius={6}
               pathOptions={{
@@ -407,9 +430,9 @@ export default function MapView({
 
         {/* Building Permits layer */}
         {layers?.building_permits &&
-          buildingPermits.map((bp) => (
+          buildingPermits.filter(validCoord).map((bp, idx) => (
             <CircleMarker
-              key={`bp-${bp.id}`}
+              key={`bp-${bp.id ?? idx}`}
               center={[bp.latitude, bp.longitude]}
               radius={5}
               pathOptions={{

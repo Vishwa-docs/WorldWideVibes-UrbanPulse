@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MapView from '../components/Map/MapView';
+import MapErrorBoundary from '../components/Map/MapErrorBoundary';
 import Sidebar from '../components/Layout/Sidebar';
 import LiveDataBar from '../components/Layout/LiveDataBar';
 import DemographicsPanel from '../components/Insights/DemographicsPanel';
@@ -36,6 +37,10 @@ export default function Dashboard({ activePersona }: DashboardProps) {
     foot_traffic: false,
     vacant_reports: false,
     business_licenses: false,
+    code_violations: false,
+    opportunity_zones: false,
+    city_owned_properties: false,
+    building_permits: false,
   });
 
   const watchedIds = watchlistItems.map((w) => w.property_id);
@@ -183,13 +188,15 @@ export default function Dashboard({ activePersona }: DashboardProps) {
           propertiesLoading={propertiesLoading}
         />
         <main className="flex-1 relative">
-          <MapView
-            properties={properties}
-            selectedProperty={selectedProperty}
-            onSelectProperty={setSelectedProperty}
-            layers={layers}
-            incidents={scorecard?.nearby_incidents}
-          />
+          <MapErrorBoundary>
+            <MapView
+              properties={properties}
+              selectedProperty={selectedProperty}
+              onSelectProperty={setSelectedProperty}
+              layers={layers}
+              incidents={scorecard?.nearby_incidents}
+            />
+          </MapErrorBoundary>
           {/* Demographics overlay panel */}
           {layers.demographics && (
             <div className="absolute top-4 left-4 z-[1000] w-80">
